@@ -103,10 +103,10 @@ MxFaceID MxBlockModel::add_face(unsigned int v1,
     return id;
 }
 
-unsigned int MxBlockModel::add_color(float r, float g, float b)
+unsigned int MxBlockModel::add_color(float r, float g, float b, float a)
 {
     assert( colors );
-    MxColor c(r, g, b);
+    MxColor c(r, g, b, a);
     colors->add(c);
     return colors->last_id();
 }

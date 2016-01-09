@@ -1,6 +1,6 @@
 include_directories(qlim)
 
-file(GLOB_RECURSE BASE_SOURCES *.c)
+file(GLOB_RECURSE BASE_SOURCES *.cpp)
 file(GLOB_RECURSE QSLIM_SOURCES qslim/*.cpp)
 
 add_library(gsalt SHARED ${BASE_SOURCES} ${QSLIM_SOURCES})

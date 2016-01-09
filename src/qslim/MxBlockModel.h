@@ -88,7 +88,7 @@ public:
 
     MxVertexID add_vertex(float, float, float);
     MxFaceID add_face(uint, uint, uint, bool will_link=true);
-    unsigned int add_color(float, float, float);
+    unsigned int add_color(float, float, float, float=1.0f);
     unsigned int add_color(unsigned int);
     unsigned int add_color(unsigned char*);
     unsigned int add_normal(float, float, float);
