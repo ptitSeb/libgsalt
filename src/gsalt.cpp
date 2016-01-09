@@ -484,7 +484,34 @@ gslat_return gsalt_query_vertex(GSalt gsalt, int index, float *x, float *y, floa
 	return GSALT_OK;
 }
 
-gslat_return gsalt_query_triangle(GSalt gsalt, int index, int *idx1, int *idx2, int *idx3) {
+gslat_return gsalt_query_triangle_uint32(GSalt gsalt, int index, uint32_t *idx1, uint32_t *idx2, uint32_t *idx3) {
+	check_gsalt;
+	gsalt_log(gsalt_verbose_all, "GSalt: query triangle(%d)\n", index);
+
+	if(!(pgsalt->faces_defined)) {
+		gsalt_log(gsalt_verbose_debug, "GSalt: query triangle index but texcoord is not activated\n");		
+		return GSALT_ERROR;
+	}
+
+	if (index<0 || index>((pgsalt->decimed_triangles)?pgsalt->decimed_triangles:pgsalt->num_triangles)) {
+		gsalt_log(gsalt_verbose_debug, "GSalt: query triangle index out of range\n");		
+		return GSALT_ERROR;
+	}
+
+	if(pgsalt->decimed_triangles) {
+		uint16_t* triangle = pgsalt->indexes.ptr+index*pgsalt->indexes.stride;
+		if(idx1) *idx1=triangle[0];
+		if(idx2) *idx2=triangle[1];
+		if(idx3) *idx3=triangle[2];
+	} else {
+		if(idx1) *idx1=pgsalt->model->face(index).v[0];
+		if(idx2) *idx2=pgsalt->model->face(index).v[1];
+		if(idx3) *idx3=pgsalt->model->face(index).v[2];
+	}
+	return GSALT_OK;
+}
+
+gslat_return gsalt_query_triangle_uint16(GSalt gsalt, int index, uint16_t *idx1, uint16_t *idx2, uint16_t *idx3)  {
 	check_gsalt;
 	gsalt_log(gsalt_verbose_all, "GSalt: query triangle(%d)\n", index);
 

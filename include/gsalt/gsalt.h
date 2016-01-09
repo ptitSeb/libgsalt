@@ -4,6 +4,8 @@
 #define GSALT_MAJOR 0
 #define GSALT_MINOR 1
 
+#include <stdint.h>
+
 typedef enum {
 	gsalt_verbose_none = 0,
 	gsalt_verbose_error,
@@ -20,6 +22,7 @@ typedef int gslat_return;
 #define GSALT_ENABLE 1
 #define GSALT_DISABLE 0
 
+#define GSALT_VERTEX 0
 #define GSALT_COLOR 1
 #define GSALT_NORMAL 2
 #define GSALT_TEXCOORD 4
@@ -64,7 +67,8 @@ gslat_return gsalt_query_normal(GSalt gsalt, int index, float *x, float *y, floa
 gslat_return gsalt_query_texcoord(GSalt gsalt, int index, float *s, float *t, float *r=NULL, float *q=NULL);
 gslat_return gsalt_query_vertex(GSalt gsalt, int index, float *x, float *y, float *z=NULL, float *w=NULL);
 
-gslat_return gsalt_query_triangle(GSalt gsalt, int index, int *idx1, int *idx2, int *idx3);
+gslat_return gsalt_query_triangle_uint32(GSalt gsalt, int index, uint32_t *idx1, uint32_t *idx2, uint32_t *idx3);
+gslat_return gsalt_query_triangle_uint16(GSalt gsalt, int index, uint16_t *idx1, uint16_t *idx2, uint16_t *idx3);
 
 gslat_return gsalt_delete(GSalt gsalt);
 #ifdef __cplusplus
