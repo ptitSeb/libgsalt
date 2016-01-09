@@ -13,3 +13,5 @@ if(CMAKE_SHARED_LIBRARY_SUFFIX MATCHES ".so")
     set_target_properties(gsalt PROPERTIES SUFFIX ".so.0")
 endif()
 
+INSTALL(FILES ../include/gsalt/gsalt.h DESTINATION include/gsalt)
+INSTALL(TARGETS gsalt LIBRARY DESTINATION lib)
