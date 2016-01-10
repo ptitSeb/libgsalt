@@ -172,6 +172,8 @@ gslat_return gsalt_delete(GSalt gsalt) {
 	if(pgsalt->normal.local) free(pgsalt->normal.ptr);
 	if(pgsalt->texcoord.local) free(pgsalt->texcoord.ptr);
 
+	if(pgsalt->indexes.local) free(pgsalt->indexes.ptr);
+
 	if(pgsalt->model) delete pgsalt->model;
 
 	pgsalt->signature = 0x0;
