@@ -9,6 +9,8 @@
 gsalt_verbose verbose_level = gsalt_verbose_warning;
 char const* verbose_string[] = {"None", "Error", "Warning", "Debug", "All"};
 
+#define GSALT_ALLFLAGS GSALT_COLOR|GSALT_NORMAL|GSALT_TEXCOORD|GSALT_EDGE
+
 int gsalt_inited = 0;
 
 typedef struct {
@@ -90,6 +92,8 @@ int gsalt_init() {
 	if (env) {
 		if (env[0]=='1')
 			verbose_level = gsalt_verbose_debug;
+		else if (env[0]=='2')
+			verbose_level = gsalt_verbose_all;
 	}
 
 	gsalt_inited = 1;
@@ -119,9 +123,9 @@ GSalt gsalt_new(int num_vertex, int num_triangles, unsigned int flags) {
 		gsalt_log(gsalt_verbose_error, "GSalt: negative number of triangles (%d)\n", num_triangles);
 		return NULL;
 	}
-	if (flags&~(GSALT_COLOR|GSALT_NORMAL|GSALT_TEXCOORD)) {
+	if (flags&~(GSALT_ALLFLAGS)) {
 		gsalt_log(gsalt_verbose_warning, "GSalt: flags = %x contains unknown flag\n", num_vertex, num_triangles, flags);
-		flags&=(GSALT_COLOR|GSALT_NORMAL|GSALT_TEXCOORD);
+		flags&=(GSALT_ALLFLAGS);
 	}
 	PGSalt pgsalt = (PGSalt)malloc(sizeof(GSalt_t));
 
@@ -222,8 +226,8 @@ int gsalt_simplify(GSalt gsalt, int objective) {
 	check_gsalt;
 	gsalt_log(gsalt_verbose_debug, "GSalt: Simplify, objective=%d\n", objective);
 
-	if(objective<10) {
-		gsalt_log(gsalt_verbose_error, "GSalt: Simplify, objective too low(%d) !\n", objective);		
+	if(objective<3) {
+		gsalt_log(gsalt_verbose_warning, "GSalt: Simplify, objective too low(%d) !\n", objective);		
 		return GSALT_ERROR;
 	}
 
@@ -233,9 +237,16 @@ int gsalt_simplify(GSalt gsalt, int objective) {
 			pgsalt->model->add_face(i*3+0, i*3+1, i*3+2);
 	}
 
-	MxFaceQSlim slim(*pgsalt->model);
-	slim.initialize();
-	slim.decimate(objective);
+	MxQSlim *slim;
+	if (pgsalt->flags&GSALT_FACE) {
+		gsalt_log(gsalt_verbose_debug, "GSalt: Simplify using %s strategy\n", "Face");
+		slim = new MxFaceQSlim(*pgsalt->model);
+	} else {
+		gsalt_log(gsalt_verbose_debug, "GSalt: Simplify using %s strategy\n", "Edge");
+		slim = new MxEdgeQSlim(*pgsalt->model);
+	}
+	slim->initialize();
+	slim->decimate(objective);
 
 	// now, get back the values in the arrays
 #define alloc_ptr(A) pgsalt->A.ptr = (float*)realloc(pgsalt->A.ptr, sizeof(float)*pgsalt->num_vertex*pgsalt->A.size);
@@ -344,6 +355,8 @@ int gsalt_simplify(GSalt gsalt, int objective) {
 	}
 	gsalt_log(gsalt_verbose_warning, "GSalt: Simplified from %d(%d) to %d(%d)\n", 
 		pgsalt->num_vertex, pgsalt->num_triangles, pgsalt->decimed_vertex, pgsalt->decimed_triangles);
+
+	delete slim;
 
 	if (pgsalt->decimed_vertex > pgsalt->num_vertex) {
 		gsalt_log(gsalt_verbose_error, "GSalt: Simplified failed, number of vertex increased\n");
@@ -469,7 +482,6 @@ gslat_return gsalt_query_texcoord(GSalt gsalt, int index, float *s, float *t, fl
 }
 gslat_return gsalt_query_vertex(GSalt gsalt, int index, float *x, float *y, float *z, float *w) {
 	check_gsalt;
-	gsalt_log(gsalt_verbose_all, "GSalt: query vertex(%d)\n", index);
 
 	if (index<0 || index>((pgsalt->decimed_vertex)?pgsalt->decimed_vertex:pgsalt->num_vertex)) {
 		gsalt_log(gsalt_verbose_debug, "GSalt: query vertex index out of range\n");		
@@ -488,13 +500,12 @@ gslat_return gsalt_query_vertex(GSalt gsalt, int index, float *x, float *y, floa
 		if(z) *z=pgsalt->model->vertex(index).as.pos[2];
 		if(w) *w=1.0f;
 	}
+	gsalt_log(gsalt_verbose_all, "GSalt: query vertex(%d) ->(%f, %f, %f)\n", index, *x, *y, *z);
 	return GSALT_OK;
 }
 
 gslat_return gsalt_query_triangle_uint32(GSalt gsalt, int index, uint32_t *idx1, uint32_t *idx2, uint32_t *idx3) {
 	check_gsalt;
-	gsalt_log(gsalt_verbose_all, "GSalt: query triangle(%d)\n", index);
-
 	if(!(pgsalt->faces_defined)) {
 		gsalt_log(gsalt_verbose_debug, "GSalt: query triangle index but texcoord is not activated\n");		
 		return GSALT_ERROR;
@@ -515,13 +526,12 @@ gslat_return gsalt_query_triangle_uint32(GSalt gsalt, int index, uint32_t *idx1,
 		if(idx2) *idx2=pgsalt->model->face(index).v[1];
 		if(idx3) *idx3=pgsalt->model->face(index).v[2];
 	}
+	gsalt_log(gsalt_verbose_all, "GSalt: query triangle uint32_t (%d) -> (%d, %d, %d)\n", index, *idx1, *idx2, *idx3);
 	return GSALT_OK;
 }
 
 gslat_return gsalt_query_triangle_uint16(GSalt gsalt, int index, uint16_t *idx1, uint16_t *idx2, uint16_t *idx3)  {
 	check_gsalt;
-	gsalt_log(gsalt_verbose_all, "GSalt: query triangle(%d)\n", index);
-
 	if(!(pgsalt->faces_defined)) {
 		gsalt_log(gsalt_verbose_debug, "GSalt: query triangle index but texcoord is not activated\n");		
 		return GSALT_ERROR;
@@ -542,5 +552,6 @@ gslat_return gsalt_query_triangle_uint16(GSalt gsalt, int index, uint16_t *idx1,
 		if(idx2) *idx2=pgsalt->model->face(index).v[1];
 		if(idx3) *idx3=pgsalt->model->face(index).v[2];
 	}
+	gsalt_log(gsalt_verbose_all, "GSalt: query triangle uint16_t (%d) -> (%d, %d, %d)\n", index, *idx1, *idx2, *idx3);
 	return GSALT_OK;
 }
