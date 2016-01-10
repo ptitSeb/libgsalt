@@ -9,7 +9,7 @@
 gsalt_verbose verbose_level = gsalt_verbose_warning;
 char const* verbose_string[] = {"None", "Error", "Warning", "Debug", "All"};
 
-#define GSALT_ALLFLAGS GSALT_COLOR|GSALT_NORMAL|GSALT_TEXCOORD|GSALT_EDGE
+#define GSALT_ALLFLAGS GSALT_VERTEX|GSALT_COLOR|GSALT_NORMAL|GSALT_TEXCOORD|GSALT_EDGE|GSALT_FACE
 
 int gsalt_inited = 0;
 
