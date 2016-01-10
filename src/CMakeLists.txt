@@ -9,9 +9,11 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     target_link_libraries(gsalt m)
 endif()
 
-if(CMAKE_SHARED_LIBRARY_SUFFIX MATCHES ".so")
-    set_target_properties(gsalt PROPERTIES SUFFIX ".so.0")
-endif()
+set(GSALT_VERSION_MAJOR 0)
+set(GSALT_VERSION_MINOR 1)
+set(GSALT_VERSION_STRING ${GSALT_VERSION_MAJOR}.${GSALT_VERSION_MINOR})
+
+set_target_properties(gsalt PROPERTIES VERSION ${GSALT_VERSION_STRING} SOVERSION ${GSALT_VERSION_MAJOR})
 
 INSTALL(FILES ../include/gsalt/gsalt.h DESTINATION include/gsalt)
 INSTALL(TARGETS gsalt LIBRARY DESTINATION lib)
