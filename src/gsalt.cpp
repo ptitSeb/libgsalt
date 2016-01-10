@@ -80,7 +80,7 @@ void gsalt_log(gsalt_verbose level, const char *fmt, ...)
 	}
 }
 
-int gsalt_init() {
+gslat_return gsalt_init() {
 	if (gsalt_inited)
 		return GSALT_OK;
 
@@ -94,6 +94,8 @@ int gsalt_init() {
 			verbose_level = gsalt_verbose_debug;
 		else if (env[0]=='2')
 			verbose_level = gsalt_verbose_all;
+		else if (env[0]=='0')
+			verbose_level = gsalt_verbose_none;
 	}
 
 	gsalt_inited = 1;
@@ -114,6 +116,7 @@ gsalt_verbose gsalt_set_verbose(gsalt_verbose new_level) {
 }
 
 GSalt gsalt_new(int num_vertex, int num_triangles, unsigned int flags) {
+	if (!gsalt_inited) gsalt_init();
 	gsalt_log(gsalt_verbose_debug, "GSalt: New Gsalt object, %d vertex, %d triangles, flags = %x\n", num_vertex, num_triangles, flags);
 	if (num_vertex<0) {
 		gsalt_log(gsalt_verbose_error, "GSalt: negative number of vertex (%d)\n", num_vertex);
