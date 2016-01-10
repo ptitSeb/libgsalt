@@ -86,6 +86,12 @@ int gsalt_init() {
 
 	verbose_level = gsalt_verbose_warning;
 
+	const char* env = getenv("GSALT_DEBUG");
+	if (env) {
+		if (env[0]=='1')
+			verbose_level = gsalt_verbose_debug;
+	}
+
 	gsalt_inited = 1;
 
 	return GSALT_OK;
@@ -136,9 +142,9 @@ GSalt gsalt_new(int num_vertex, int num_triangles, unsigned int flags) {
 
 	pgsalt->model = new MxStdModel(num_vertex, num_triangles);
 
-	if(pgsalt->flags&GSALT_COLOR) pgsalt->model->color_binding(MX_PERVERTEX);
-	if(pgsalt->flags&GSALT_NORMAL) pgsalt->model->normal_binding(MX_PERVERTEX);
-	if(pgsalt->flags&GSALT_TEXCOORD) pgsalt->model->texcoord_binding(MX_PERVERTEX);
+	pgsalt->model->color_binding((pgsalt->flags&GSALT_COLOR)?MX_PERVERTEX:MX_UNBOUND);
+	pgsalt->model->normal_binding((pgsalt->flags&GSALT_NORMAL)?MX_PERVERTEX:MX_UNBOUND);
+	pgsalt->model->texcoord_binding((pgsalt->flags&GSALT_TEXCOORD)?MX_PERVERTEX:MX_UNBOUND);
 
 	pgsalt->signature = SIGN;
 
@@ -162,6 +168,8 @@ gslat_return gsalt_delete(GSalt gsalt) {
 	if(pgsalt->model) delete pgsalt->model;
 
 	pgsalt->signature = 0x0;
+
+	free(pgsalt);
 
 	return GSALT_OK;
 }
@@ -214,33 +222,126 @@ int gsalt_simplify(GSalt gsalt, int objective) {
 	check_gsalt;
 	gsalt_log(gsalt_verbose_debug, "GSalt: Simplify, objective=%d\n", objective);
 
-	if(objective<3*50) {
+	if(objective<10) {
 		gsalt_log(gsalt_verbose_error, "GSalt: Simplify, objective too low(%d) !\n", objective);		
 		return GSALT_ERROR;
 	}
 
-	if(!pgsalt->faces_defined) {
+	if(pgsalt->faces_defined==0) {
 		gsalt_log(gsalt_verbose_debug, "GSalt: create a dummy triangle list\n");
 		for (int i=0; i<pgsalt->num_triangles; i++)
 			pgsalt->model->add_face(i*3+0, i*3+1, i*3+2);
 	}
 
-	MxEdgeQSlim slim(*pgsalt->model);
+	MxFaceQSlim slim(*pgsalt->model);
 	slim.initialize();
 	slim.decimate(objective);
+
+	// now, get back the values in the arrays
+#define alloc_ptr(A) pgsalt->A.ptr = (float*)realloc(pgsalt->A.ptr, sizeof(float)*pgsalt->num_vertex*pgsalt->A.size);
+	if(pgsalt->vertex.local) {
+		alloc_ptr(vertex);
+	}
+	if((pgsalt->flags&GSALT_COLOR) && (pgsalt->color.local)) {
+		alloc_ptr(color);		
+	}
+	if((pgsalt->flags&GSALT_NORMAL) && (pgsalt->normal.local)) {
+		alloc_ptr(normal);		
+	}
+	if((pgsalt->flags&GSALT_TEXCOORD) && (pgsalt->texcoord.local)) {
+		alloc_ptr(texcoord);		
+	}
+#undef alloc_ptr
+	if(pgsalt->indexes.local) {
+		pgsalt->indexes.ptr = (uint16_t*)realloc(pgsalt->indexes.ptr, sizeof(uint16_t)*pgsalt->num_triangles*3*pgsalt->indexes.size);
+	}
 
 	// now, count the new number of vertex and triangles
 	int *match;
 	match = (int*)malloc(sizeof(int)*pgsalt->num_vertex);
-	pgsalt->decimed_vertex = 0;
-	for (int i=0; i<pgsalt->num_vertex; i++)
-		if(pgsalt->model->vertex_is_valid(i))
-			match[i]=pgsalt->decimed_vertex++;
-	pgsalt->decimed_triangles = 0;
-	for (int i=0; i<pgsalt->num_triangles; i++)
-		if(pgsalt->model->face_is_valid(i))
-			pgsalt->decimed_triangles++;
 
+	float *vertex, *color, *normal, *texcoord;
+	uint16_t *indexes;
+
+	vertex = pgsalt->vertex.ptr;
+	color = (pgsalt->flags&GSALT_COLOR)?pgsalt->color.ptr:NULL;
+	normal = (pgsalt->flags&GSALT_NORMAL)?pgsalt->normal.ptr:NULL;
+	texcoord = 	(pgsalt->flags&GSALT_TEXCOORD)?pgsalt->texcoord.ptr:NULL;
+
+	pgsalt->decimed_vertex = 0;
+	pgsalt->decimed_triangles = 0;
+
+	for (int i=0; i<pgsalt->num_vertex; i++) {
+		if (pgsalt->model->vertex_is_valid(i)) {
+			vertex[0] = pgsalt->model->vertex(i).as.pos[0]; vertex[1] = pgsalt->model->vertex(i).as.pos[1]; vertex[2] = pgsalt->model->vertex(i).as.pos[2];
+			if(pgsalt->vertex.size>3) vertex[3] = 1.0f;
+			vertex += pgsalt->vertex.stride;
+			if(color) {
+				color[0] = pgsalt->model->color(i).R();
+				color[1] = pgsalt->model->color(i).G();
+				color[2] = pgsalt->model->color(i).B();
+				if(pgsalt->color.size>3)
+					color[3] = pgsalt->model->color(i).A();
+				color += pgsalt->color.stride;
+			}
+			if(normal) {
+				normal[0] = pgsalt->model->normal(i)[0]; normal[1] = pgsalt->model->normal(i)[1]; normal[2] = pgsalt->model->normal(i)[2];
+				normal += pgsalt->normal.stride;
+			}
+			if(texcoord) {
+				texcoord[0] = pgsalt->model->texcoord(i).u[0]; texcoord[1] = pgsalt->model->texcoord(i).u[1];
+				if(pgsalt->texcoord.size>2) texcoord[2] = 0.0f;
+				if(pgsalt->texcoord.size>3) texcoord[3] = 1.0f;
+				texcoord += pgsalt->texcoord.stride;
+			}
+			match[i]=pgsalt->decimed_vertex++;
+		}
+	}
+	int newFaces = 0;
+	indexes = pgsalt->indexes.ptr;
+	for (int i=0; i<pgsalt->num_triangles; i++) {
+		if (pgsalt->model->face_is_valid(i)) {
+			*(indexes++)=match[pgsalt->model->face(i).v[0]];
+			*(indexes++)=match[pgsalt->model->face(i).v[1]];
+			*(indexes++)=match[pgsalt->model->face(i).v[2]];
+			newFaces++;
+		}
+	}
+
+	pgsalt->decimed_triangles=newFaces;
+
+	free(match);
+
+	if(!pgsalt->faces_defined) {
+		gsalt_log(gsalt_verbose_debug, "GSalt: no indexes, flatening the vertex list\n");
+		// indexes is not used here, so put the vertex "flat" and discard indexes array
+#define alloc(A,B) if((pgsalt->flags & B)==B) { \
+			A=(float*)malloc(sizeof(float)*pgsalt->num_vertex*pgsalt->A.stride);	\
+			memcpy(A, pgsalt->A.ptr, sizeof(float)*pgsalt->num_vertex*pgsalt->A.stride);	\
+		} else A=NULL
+		alloc(vertex, GSALT_VERTEX);
+		alloc(color, GSALT_COLOR);
+		alloc(texcoord, GSALT_TEXCOORD);
+		alloc(normal, GSALT_NORMAL);
+#undef alloc
+		uint16_t *indexes=pgsalt->indexes.ptr;
+
+		for (int i=0; i<pgsalt->decimed_triangles*3; i++) {
+			#define copy(A) if(A) memcpy(pgsalt->A.ptr+i*pgsalt->A.stride, A+indexes[i]*pgsalt->A.stride, sizeof(float)*pgsalt->A.size);
+			copy(vertex);
+			copy(normal);
+			copy(texcoord);
+			copy(color);
+			#undef copy
+		}
+		free(vertex);
+		free(color);
+		free(normal);
+		free(texcoord);
+		pgsalt->decimed_vertex = pgsalt->decimed_triangles*3;
+		free(pgsalt->indexes.ptr);
+		pgsalt->indexes.ptr=NULL;
+	}
 	gsalt_log(gsalt_verbose_warning, "GSalt: Simplified from %d(%d) to %d(%d)\n", 
 		pgsalt->num_vertex, pgsalt->num_triangles, pgsalt->decimed_vertex, pgsalt->decimed_triangles);
 
@@ -265,100 +366,6 @@ int gsalt_simplify(GSalt gsalt, int objective) {
 		free(match);
 		return GSALT_OK;
 	}
-	// now, get back the values in the arrays
-#define alloc_ptr(A) pgsalt->A.ptr = (float*)realloc(pgsalt->A.ptr, sizeof(float)*pgsalt->decimed_vertex*pgsalt->A.size);
-	if(pgsalt->vertex.local) {
-		alloc_ptr(vertex);
-	}
-	if((pgsalt->flags&GSALT_COLOR) && (pgsalt->color.local)) {
-		alloc_ptr(color);		
-	}
-	if((pgsalt->flags&GSALT_NORMAL) && (pgsalt->normal.local)) {
-		alloc_ptr(normal);		
-	}
-	if((pgsalt->flags&GSALT_TEXCOORD) && (pgsalt->texcoord.local)) {
-		alloc_ptr(texcoord);		
-	}
-#undef alloc_ptr
-	if(pgsalt->indexes.local) {
-		pgsalt->indexes.ptr = (uint16_t*)realloc(pgsalt->indexes.ptr, sizeof(float)*pgsalt->decimed_vertex*pgsalt->indexes.size);
-	}
-
-	float *vec, *color, *normal, *texcoord;
-	uint16_t *indexes;
-
-	vec = pgsalt->vertex.ptr;
-	color = (pgsalt->flags&GSALT_COLOR)?pgsalt->color.ptr:NULL;
-	normal = (pgsalt->flags&GSALT_NORMAL)?pgsalt->normal.ptr:NULL;
-	texcoord = 	(pgsalt->flags&GSALT_TEXCOORD)?pgsalt->texcoord.ptr:NULL;
-
-	for (int i=0; i<pgsalt->num_vertex; i++) {
-		if (pgsalt->model->vertex_is_valid(i)) {
-			vec[0] = pgsalt->model->vertex(i).as.pos[0]; vec[1] = pgsalt->model->vertex(i).as.pos[1]; vec[2] = pgsalt->model->vertex(i).as.pos[2];
-			if(pgsalt->vertex.size>3) vec[3] = 1.0f;
-			vec += pgsalt->vertex.stride;
-			if(color) {
-				color[0] = pgsalt->model->color(i).R();
-				color[1] = pgsalt->model->color(i).G();
-				color[2] = pgsalt->model->color(i).B();
-				if(pgsalt->vertex.size>3)
-					color[3] = pgsalt->model->color(i).A();
-				color += pgsalt->color.stride;
-			}
-			if(normal) {
-				normal[0] = pgsalt->model->normal(i)[0]; normal[1] = pgsalt->model->normal(i)[1]; normal[2] = pgsalt->model->normal(i)[2];
-				normal += pgsalt->normal.stride;
-			}
-			if(texcoord) {
-				texcoord[0] = pgsalt->model->texcoord(i).u[0]; texcoord[1] = pgsalt->model->texcoord(i).u[1];
-				if(pgsalt->texcoord.size>2) texcoord[2] = 0.0f;
-				if(pgsalt->texcoord.size>3) texcoord[2] = 1.0f;
-				texcoord += pgsalt->texcoord.stride;
-			}
-		}
-	}
-	int newFaces = 0;
-	for (int i=0; i<pgsalt->num_triangles; i++) {
-		if (pgsalt->model->face_is_valid(i)) {
-			pgsalt->indexes.ptr[newFaces*3+0]=match[pgsalt->model->face(i).v[0]];
-			pgsalt->indexes.ptr[newFaces*3+1]=match[pgsalt->model->face(i).v[1]];
-			pgsalt->indexes.ptr[newFaces*3+2]=match[pgsalt->model->face(i).v[2]];
-			newFaces++;
-		}
-	}
-
-	free(match);
-
-	if(!pgsalt->faces_defined) {
-		// indexes is not used here, so put the vertex "flat" and discard indexes array
-		float *vertex, *color, *normal, *texcoord;
-#define alloc(A) if(A) { \
-		A=(float*)malloc(sizeof(float)*pgsalt->A.stride);	\
-		memcpy(A, pgsalt->A.ptr, sizeof(float)*pgsalt->A.stride);	\
-	}
-		alloc(vertex);
-		alloc(color);
-		alloc(texcoord);
-		alloc(normal);
-#undef alloc
-		uint16_t *indexes=pgsalt->indexes.ptr;
-#define copy(A) if(A) memcpy(pgsalt->A.ptr+i*pgsalt->A.stride, A+indexes[i], sizeof(float)*pgsalt->A.size);
-
-		for (int i=0; i<pgsalt->decimed_triangles*3; i++) {
-			copy(vertex);
-			copy(normal);
-			copy(texcoord);
-			copy(color);
-		}
-#undef copy
-		free(vertex);
-		free(color);
-		free(normal);
-		free(texcoord);
-		pgsalt->decimed_vertex = pgsalt->decimed_triangles*3;
-		free(pgsalt->indexes.ptr);
-		pgsalt->indexes.ptr=NULL;
-	}
 
 	return newFaces;
 }
@@ -367,7 +374,7 @@ int gsalt_query_numvertex(GSalt gsalt) {
 	check_gsalt;
 	gsalt_log(gsalt_verbose_debug, "GSalt: query numvertex\n");
 
-	gsalt_log(gsalt_verbose_debug, "GSalt: numvertex = %d, decimed_vertex = %d\n", pgsalt->num_vertex, pgsalt->decimed_vertex);
+	gsalt_log(gsalt_verbose_debug, "GSalt: num_vertex = %d, decimed_vertex = %d\n", pgsalt->num_vertex, pgsalt->decimed_vertex);
 
 	return (pgsalt->decimed_vertex)?pgsalt->decimed_vertex:pgsalt->num_vertex;
 }
@@ -499,7 +506,7 @@ gslat_return gsalt_query_triangle_uint32(GSalt gsalt, int index, uint32_t *idx1,
 	}
 
 	if(pgsalt->decimed_triangles) {
-		uint16_t* triangle = pgsalt->indexes.ptr+index*pgsalt->indexes.stride;
+		uint16_t* triangle = pgsalt->indexes.ptr+index*3*pgsalt->indexes.stride;
 		if(idx1) *idx1=triangle[0];
 		if(idx2) *idx2=triangle[1];
 		if(idx3) *idx3=triangle[2];
@@ -526,7 +533,7 @@ gslat_return gsalt_query_triangle_uint16(GSalt gsalt, int index, uint16_t *idx1,
 	}
 
 	if(pgsalt->decimed_triangles) {
-		uint16_t* triangle = pgsalt->indexes.ptr+index*pgsalt->indexes.stride;
+		uint16_t* triangle = pgsalt->indexes.ptr+index*3*pgsalt->indexes.stride;
 		if(idx1) *idx1=triangle[0];
 		if(idx2) *idx2=triangle[1];
 		if(idx3) *idx3=triangle[2];
