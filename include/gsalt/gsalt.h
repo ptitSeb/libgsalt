@@ -30,6 +30,9 @@ typedef int gslat_return;
 #define GSALT_EDGE 0
 #define GSALT_FACE 128
 
+#define GSALT_UINT32 0
+#define GSALT_UINT16 1
+
 typedef void* GSalt;
 
 #ifdef __cplusplus
