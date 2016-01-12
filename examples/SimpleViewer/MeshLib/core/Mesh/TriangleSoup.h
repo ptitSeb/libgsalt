@@ -251,20 +251,22 @@ class CTriangleMesh
 		char* str = strtok(line, " \n");
 		while( str = strtok(NULL, " \n") )
 		{
-			faces[f][0]=-1; faces[f][1]=-1; faces[f][2]=-1;
-			char *str_uv=NULL, *str_norm=NULL;
-			str_uv=strchr(str,'/'); 
-			if(str_uv) {
-				str_uv[0]='\0'; str_uv++;
-				str_norm=strchr(str_uv,'/');
-				if(str_norm) {
-					str_norm[0]='\0'; str_norm++;
+			if((str[0]>='0') && (str[0]<='9')) {
+				faces[f][0]=-1; faces[f][1]=-1; faces[f][2]=-1;
+				char *str_uv=NULL, *str_norm=NULL;
+				str_uv=strchr(str,'/'); 
+				if(str_uv) {
+					str_uv[0]='\0'; str_uv++;
+					str_norm=strchr(str_uv,'/');
+					if(str_norm) {
+						str_norm[0]='\0'; str_norm++;
+					}
 				}
+				faces[f][0] = atoi(str);
+				if(str_uv && str_uv[0]!='\0') faces[f][1] = atoi(str_uv);
+				if(str_norm && str_norm[0]!='\0') faces[f][2] = atoi(str_norm);
+				f++;
 			}
-			faces[f][0] = atoi(str);
-			if(str_uv && str_uv[0]!='\0') faces[f][1] = atoi(str_uv);
-			if(str_norm && str_norm[0]!='\0') faces[f][2] = atoi(str_norm);
-			f++;
 		}
 		if(f<2) return;
 		// add the faces and vertex
@@ -307,234 +309,7 @@ class CTriangleMesh
 	}
 };
 
-class CObjVertex
-{
-public:
-	int m_ipt;
-	int m_iuv;
-	int m_inl;
-};
+}	//namspace TriangleSoup
 
-class CObjFace
-{
-public:
-	CObjVertex m_v[3];
-	double m_area;
-	CPoint m_normal;
-};
-
-class CObject
-{
-public:
-	CObject() 
-	{ 
-		m_has_uv = false;
-		m_has_normal = false;
-	}
-	
-	void read( const char * input );
-
-	std::vector<CPoint>  & points()  { return m_points;  };
-	std::vector<CPoint2> & uvs()     { return m_uvs;     };
-	std::vector<CPoint>  & normals() { return m_normals; };
-	std::vector<CObjFace> & faces()  { return m_faces;   };
-protected:
-
-	std::vector<CPoint>   m_points;
-	std::vector<CPoint2>  m_uvs;
-	std::vector<CPoint>   m_normals;
-
-	std::vector<CObjFace> m_faces;
-
-public:
-
-	bool m_has_uv;
-	bool m_has_normal;
-};
-
-void CObject::read( const char * input )
-{
-	FILE * fp;
-	
-	fp = fopen( input,"r" );
-
-	while( !feof(fp) )
-	{
-		char line[1024];
-		if( fgets(line,1024,fp) == NULL ) return;
-
-
-		if( line[0] == 'v' )
-		{
-
-			if( line[1]=='t' )
-			{
-				CPoint2 uv;
-				sscanf(line,"vt %lf %lf", &uv[0], &uv[1]);
-				m_uvs.push_back( uv );
-				continue;
-			}
-			
-			if( line[1] == 'n')
-			{
-				CPoint n;
-				sscanf(line,"vn %lf %lf %lf", &n[0], &n[1], &n[2]);
-				m_normals.push_back( n );
-				continue;
-			}
-
-			CPoint p;
-			sscanf(line,"v %lf %lf %lf", &p[0], &p[1], &p[2]);
-			m_points.push_back( p );
-			continue;
-		}
-
-		if( line[0] == 'f' )
-		{
-			CObjFace pf;
-
-			char* strcnt = strchr(line,' ');;
-			int c = 0;
-			while(strcnt && strcnt[0]!='\0') {
-				c++;
-				strcnt=strchr(strcnt+1,' ');				
-			}
-			
-			char * str = strtok( line, " \n" );
-
-			//count number of '/'
-			strcnt = strchr(line,'/');;
-			int cntslash = 0;
-			while(strcnt && strcnt[0]!='\0') {
-				cntslash++;
-				strcnt=strchr(strcnt+1,'/');				
-			}
-
-			int ids[50];
-			int count = 0;
-
-			while( str = strtok(NULL, " /\n") )
-			{
-				ids[count++] = atoi( str ) - 1;
-			}
-		
-			count /= cntslash;
-
-			for( int i = 0; i < 3 ; i ++ )
-			{
-				pf.m_v[i].m_ipt = ids[i*cntslash+0];
-			}
-
-			if( cntslash > 1 )
-			{
-				m_has_uv = true;
-				for( int i = 0; i < 3 ; i ++ )
-				{
-					pf.m_v[i].m_iuv = ids[i*cntslash+1];
-				}
-			}
-
-			if( cntslash == 3 )
-			{
-				m_has_normal = true;
-				for( int i = 0; i < 3 ; i ++ )
-				{
-					pf.m_v[i].m_inl = ids[i*cntslash+2];
-				}
-			}
-
-			m_faces.push_back(pf);
-		}		
-
-	}
-
-}
-
-
-}
-}
-#endif
-
-
-/* std::string version is slow
-
-void CObject::read( const char * input )
-{
-	std::ifstream file( input );
-
-	std::string line;
-
-	while( std::getline( file, line ) )
-	{
-		strutil::Tokenizer TK(line);
-
-		if( !TK.nextToken() ) continue;
-		std::string key = TK.getToken();
-
-		if( key == "v" )
-		{
-			CPoint p;
-			for(int i = 0; i < 3; i ++ )
-			{
-				TK.nextToken(" \n");
-				p[i] = strutil::parseString<double>( TK.getToken() );
-			}
-			m_points.push_back( p );
-			continue;
-		}
-
-		if( key == "vt" )
-		{
-			CPoint2 uv;
-			for(int i = 0; i < 2; i ++ )
-			{
-				TK.nextToken(" \n");
-				uv[i] = strutil::parseString<double>( TK.getToken() );
-			}
-			m_uvs.push_back( uv );
-			continue;
-		}
-
-		if( key == "vn" )
-		{
-			CPoint n;
-			for(int i = 0; i < 3; i ++ )
-			{
-				TK.nextToken(" \n");
-				n[i] = strutil::parseString<double>( TK.getToken() );
-			}
-			m_normals.push_back( n );
-			continue;
-		}
-
-		if( key == "f" )
-		{
-			CObjFace pf;
-			for( int i = 0; i < 3; i ++ )
-			{
-				TK.nextToken(" \n");			
-				strutil::Tokenizer STK( TK.getToken(), "/ \n" );
-
-				STK.nextToken();
-				pf.m_v[i].m_ipt = strutil::parseString<int>( STK.getToken() )-1;
-
-				if( STK.nextToken() )
-				{
-					pf.m_v[i].m_iuv = strutil::parseString<int>( STK.getToken() )-1;
-					m_has_uv = true;
-				}
-
-				if( STK.nextToken() )
-				{
-					pf.m_v[i].m_inl = strutil::parseString<int>( STK.getToken() )-1;
-					m_has_normal = true;
-				}
-			}
-			m_faces.push_back(pf);
-		}
-		
-
-	}
-
-}
-*/
+}	//namespace Mesh
+#endif //_TRIANGLE_SOUP_H_
