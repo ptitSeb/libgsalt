@@ -28,4 +28,8 @@ You'll need a C++ compiler for it.
 Use
 ===
 
-*TODO*
+v0.1 only have single texture and no batch feed of vertex/triangle.
+
+You can find an example in the `examples` folder. The SimpleViewer can show "obj" mesh and you optionnaly can reduce the triangles count by command line.
+
+Generic method to use gslat: *TODO*
