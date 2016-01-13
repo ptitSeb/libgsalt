@@ -21,12 +21,14 @@ typedef struct {
 	int local;
 } fpointer;
 
-typedef struct {
-	union {
+typedef	union {
 		uint16_t *ui16;
 		uint32_t *ui32;
 		void	 *ptr;
-	} ptr;
+} multiptr;
+
+typedef struct {
+	multiptr ptr;
 	int size;
 	int stride;
 	int local;
@@ -598,4 +600,140 @@ gslat_return gsalt_query_triangle_uint16(GSalt gsalt, int index, uint16_t *idx1,
 	}
 	gsalt_log(gsalt_verbose_all, "GSalt: query triangle uint16_t (%d) -> (%d, %d, %d)\n", index, *idx1, *idx2, *idx3);
 	return GSALT_OK;
+}
+
+// v0.2 api
+gslat_return gsalt_array_vertex(GSalt gsalt, int type, int size, int stride, void* pointer)
+{
+	if (type!=GSALT_FLOAT) {
+		gsalt_log(gsalt_verbose_error, "GSalt: Array vertex only support FLOAT (type=%d)\n", type);
+		return GSALT_ERROR;
+	}
+	check_gsalt;
+
+	gsalt_log(gsalt_verbose_debug, "GSalt: Array vertex defined (%s, %d, %d)\n", "FLOAT", size, stride);
+	init_pointer(&pgsalt->vertex, (float*)pointer, size, stride, 0);
+
+	float x=0, y=0, z=0/*, w=1*/;
+	int sz = pgsalt->vertex.size;
+	int width = pgsalt->vertex.stride;
+	float* array = pgsalt->vertex.ptr;
+	for (int i=0; i<pgsalt->num_vertex; i++) {
+		if (sz>0) x = array[0];
+		if (sz>1) y = array[1];
+		if (sz>2) z = array[2];
+		//if (sz>3) w = array[3];
+		pgsalt->model->add_vertex(x, y, z);
+		array+=width;
+	}
+}
+
+gslat_return gsalt_array_normal(GSalt gsalt, int type, int stride, void* pointer) {
+	if (type!=GSALT_FLOAT) {
+		gsalt_log(gsalt_verbose_error, "GSalt: Array normal only support FLOAT (type=%d)\n", type);
+		return GSALT_ERROR;
+	}
+	check_gsalt;
+	if(!(pgsalt->flags&GSALT_NORMAL)) {
+		gsalt_log(gsalt_verbose_debug, "GSalt: Setting Array normal but normal is not activated\n");		
+		return GSALT_ERROR;
+	}
+
+	gsalt_log(gsalt_verbose_debug, "GSalt: Array normal defined (%s, %d)\n", "FLOAT", stride);
+	init_pointer(&pgsalt->normal, (float*)pointer, 3, stride, 0);
+
+	float x=0, y=0, z=0;
+	int sz = pgsalt->normal.size;
+	int width = pgsalt->normal.stride;
+	float* array = pgsalt->normal.ptr;
+	for (int i=0; i<pgsalt->num_vertex; i++) {
+		if (sz>0) x = array[0];
+		if (sz>1) y = array[1];
+		if (sz>2) z = array[2];
+		pgsalt->model->add_normal(x, y, z);
+		array+=width;
+	}
+}
+
+gslat_return gsalt_array_color(GSalt gsalt, int type, int size, int stride, void* pointer) {
+	if (type!=GSALT_FLOAT) {
+		gsalt_log(gsalt_verbose_error, "GSalt: Array color only support FLOAT (type=%d)\n", type);
+		return GSALT_ERROR;
+	}
+	check_gsalt;
+	if(!(pgsalt->flags&GSALT_COLOR)) {
+		gsalt_log(gsalt_verbose_debug, "GSalt: Setting Array color but color is not activated\n");		
+		return GSALT_ERROR;
+	}
+
+	gsalt_log(gsalt_verbose_debug, "GSalt: Array color defined (%s, %d, %d)\n", "FLOAT", size, stride);
+	init_pointer(&pgsalt->color, (float*)pointer, size, stride, 0);
+
+	float r=0, g=0, b=0, a=1;
+	int sz = pgsalt->color.size;
+	int width = pgsalt->color.stride;
+	float* array = pgsalt->color.ptr;
+	for (int i=0; i<pgsalt->num_vertex; i++) {
+		if (sz>0) r = array[0];
+		if (sz>1) g = array[1];
+		if (sz>2) b = array[2];
+		if (sz>3) a = array[3];
+		pgsalt->model->add_color(r, g, b, a);
+		array+=width;
+	}
+}
+
+gslat_return gsalt_array_texcoord(GSalt gsalt, int type, int size, int stride, void* pointer) {
+	if (type!=GSALT_FLOAT) {
+		gsalt_log(gsalt_verbose_error, "GSalt: Array texcoord only support FLOAT (type=%d)\n", type);
+		return GSALT_ERROR;
+	}
+	check_gsalt;
+	if(!(pgsalt->flags&GSALT_TEXCOORD)) {
+		gsalt_log(gsalt_verbose_debug, "GSalt: Setting Array texcoord but texcoord is not activated\n");		
+		return GSALT_ERROR;
+	}
+
+	gsalt_log(gsalt_verbose_debug, "GSalt: Array texcoord defined (%s, %d, %d)\n", "FLOAT", size, stride);
+	init_pointer(&pgsalt->texcoord, (float*)pointer, size, stride, 0);
+
+	float s=0, t=0/*, r=0, q=1*/;
+	int sz = pgsalt->texcoord.size;
+	int width = pgsalt->texcoord.stride;
+	float* array = pgsalt->texcoord.ptr;
+	for (int i=0; i<pgsalt->num_vertex; i++) {
+		if (sz>0) s = array[0];
+		if (sz>1) t = array[1];
+		/*if (sz>2) r = array[2];
+		if (sz>3) q = array[3];*/
+		pgsalt->model->add_texcoord(s, t);
+		array+=width;
+	}
+}
+
+gslat_return gsalt_array_indexes(GSalt gsalt, int type, void* pointer) {
+	if ((type!=GSALT_UINT16) && (type!=GSALT_UINT32)) {
+		gsalt_log(gsalt_verbose_error, "GSalt: Array indexes only support UINT16 and UINT32 (type=%d)\n", type);
+		return GSALT_ERROR;
+	}
+	check_gsalt;
+
+	gsalt_log(gsalt_verbose_debug, "GSalt: Array indexes defined (%s)\n", (type)?"UINT16":"UINT32");
+	init_pointer(&pgsalt->indexes, pointer, 1, 0, 0, type);
+
+	pgsalt->faces_defined=pgsalt->num_triangles;
+
+	int idx1, idx2, idx3;
+	multiptr array = pgsalt->indexes.ptr;
+	int tp = pgsalt->indexes.type;
+	for (int i=0; i<pgsalt->num_triangles; i++) {
+		idx1 = (tp)?array.ui16[0]:array.ui32[0];
+		idx2 = (tp)?array.ui16[1]:array.ui32[1];
+		idx3 = (tp)?array.ui16[2]:array.ui32[2];
+		pgsalt->model->add_face(idx1, idx2, idx3);
+		if(tp)
+			array.ui16+=3;
+		else
+			array.ui32+=3;
+	}
 }

@@ -2,8 +2,11 @@
 #define _GSALT_H_
 
 #define GSALT_MAJOR 0
-#define GSALT_MINOR 1
+#define GSALT_MINOR 2
 
+#ifdef __cplusplus
+#include <cstddef>
+#endif
 #include <stdint.h>
 
 typedef enum {
@@ -32,6 +35,7 @@ typedef int gslat_return;
 
 #define GSALT_UINT32 0
 #define GSALT_UINT16 1
+#define GSALT_FLOAT 2
 
 typedef void* GSalt;
 
@@ -77,6 +81,18 @@ gslat_return gsalt_query_triangle_uint32(GSalt gsalt, int index, uint32_t *idx1,
 gslat_return gsalt_query_triangle_uint16(GSalt gsalt, int index, uint16_t *idx1, uint16_t *idx2, uint16_t *idx3);
 
 gslat_return gsalt_delete(GSalt gsalt);
+
+//v0.2 api: setting arrays instead of individual elements
+// only type==GSALT_FLOAT is supported for now.
+// Stride must be in "type" unit (meaning you put 1 instead of 4 to have 1 float) 0 mean stride automaticaly calculate
+gslat_return gsalt_array_vertex(GSalt gsalt, int type, int size, int stride, void* pointer);
+gslat_return gsalt_array_normal(GSalt gsalt, int type, int stride, void* pointer);
+gslat_return gsalt_array_color(GSalt gsalt, int type, int size, int stride, void* pointer);
+gslat_return gsalt_array_texcoord(GSalt gsalt, int type, int size, int stride, void* pointer);
+
+// Both GSALT_UINT16 and GLSALT_UINT32 are available
+gslat_return gsalt_array_indexes(GSalt gsalt, int type, void* pointer);
+
 #ifdef __cplusplus
 }
 #endif
