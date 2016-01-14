@@ -240,6 +240,15 @@ void MxBlockModel::texcoord_binding(unsigned char b)
     if( b!=MX_UNBOUND && b!=MX_PERVERTEX )
 	fatal_error("Illegal texture coordinate binding.");
 
+    if( b==MX_UNBOUND )
+    {
+    binding_mask &= (~MX_TEXTURE_MASK);
+    }
+    else
+    {
+    binding_mask |= MX_TEXTURE_MASK;
+    }
+
     int size = binding_size(*this, b);
     if( tcoords )  tcoords->reset();
     else tcoords = new MxDynBlock<MxTexCoord>(size);
