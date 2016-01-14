@@ -253,19 +253,17 @@ int gsalt_simplify(GSalt gsalt, int objective) {
 		for (int i=0; i<pgsalt->num_triangles; i++)
 			pgsalt->model->add_face(i*3+0, i*3+1, i*3+2);
 	}
-#if 0
-	MxQSlim *slim;
+	MxStdSlim *slim;
 	if (pgsalt->flags&GSALT_FACE) {
 		gsalt_log(gsalt_verbose_debug, "GSalt: Simplify using %s strategy\n", "Face");
 		slim = new MxFaceQSlim(*pgsalt->model);
-	} else {
+	} else if (pgsalt->flags&GSALT_EDGE) {
 		gsalt_log(gsalt_verbose_debug, "GSalt: Simplify using %s strategy\n", "Edge");
 		slim = new MxEdgeQSlim(*pgsalt->model);
+	} else {
+		gsalt_log(gsalt_verbose_debug, "GSalt: Simplify using %s strategy\n", "Prop");
+		slim = new MxPropSlim(*pgsalt->model);
 	}
-#else
-	MxPropSlim *slim;
-	slim = new MxPropSlim(pgsalt->model);
-#endif
 	slim->initialize();
 	slim->decimate(objective);
 	// now, get back the values in the arrays

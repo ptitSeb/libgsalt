@@ -72,7 +72,7 @@ public:
     bool will_decouple_quadrics;
 
 public:
-    MxPropSlim(MxStdModel *);
+    MxPropSlim(MxStdModel&);
 
     uint dim() const { return D; }
 

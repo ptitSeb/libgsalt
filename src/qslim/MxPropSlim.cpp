@@ -14,10 +14,10 @@
 
 typedef MxQuadric Quadric;
 
-MxPropSlim::MxPropSlim(MxStdModel *m0)
-    : MxStdSlim(m0),
-      __quadrics(m0->vert_count()),
-      edge_links(m0->vert_count())
+MxPropSlim::MxPropSlim(MxStdModel &m0)
+    : MxStdSlim(&m0),
+      __quadrics(m0.vert_count()),
+      edge_links(m0.vert_count())
 {
     consider_color();
     consider_texture();

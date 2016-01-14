@@ -30,7 +30,8 @@ typedef int gslat_return;
 #define GSALT_NORMAL 2
 #define GSALT_TEXCOORD 4
 
-#define GSALT_EDGE 0
+#define GSALT_PROP 0
+#define GSALT_EDGE 256
 #define GSALT_FACE 128
 
 #define GSALT_UINT32 0
