@@ -619,6 +619,7 @@ int main( int argc, char * argv[] )
 
 	if( textureFlag )
 	{
+		printf("Image loaded, size=%lux%lu\n", image.GetNumRows(), image.GetNumCols());
 		initialize_bmp_texture();
 
 	}
