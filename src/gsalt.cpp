@@ -253,7 +253,7 @@ int gsalt_simplify(GSalt gsalt, int objective) {
 		for (int i=0; i<pgsalt->num_triangles; i++)
 			pgsalt->model->add_face(i*3+0, i*3+1, i*3+2);
 	}
-
+#if 0
 	MxQSlim *slim;
 	if (pgsalt->flags&GSALT_FACE) {
 		gsalt_log(gsalt_verbose_debug, "GSalt: Simplify using %s strategy\n", "Face");
@@ -262,9 +262,12 @@ int gsalt_simplify(GSalt gsalt, int objective) {
 		gsalt_log(gsalt_verbose_debug, "GSalt: Simplify using %s strategy\n", "Edge");
 		slim = new MxEdgeQSlim(*pgsalt->model);
 	}
+#else
+	MxPropSlim *slim;
+	slim = new MxPropSlim(pgsalt->model);
+#endif
 	slim->initialize();
 	slim->decimate(objective);
-
 	// now, get back the values in the arrays
 #define alloc_ptr(A) pgsalt->A.ptr = (float*)realloc(pgsalt->A.ptr, sizeof(float)*pgsalt->num_vertex*pgsalt->A.size);
 	if(pgsalt->vertex.local) {
@@ -288,8 +291,11 @@ int gsalt_simplify(GSalt gsalt, int objective) {
 	}
 
 	// now, count the new number of vertex and triangles
+	unsigned int max_vertex = pgsalt->model->vert_count();
+	unsigned int max_faces = pgsalt->model->face_count();
+
 	int *match;
-	match = (int*)malloc(sizeof(int)*pgsalt->num_vertex);
+	match = (int*)malloc(sizeof(int)*max_vertex);
 
 	float *vertex, *color, *normal, *texcoord;
 	uint16_t *ind16;
@@ -303,8 +309,8 @@ int gsalt_simplify(GSalt gsalt, int objective) {
 	pgsalt->decimed_vertex = 0;
 	pgsalt->decimed_triangles = 0;
 
-	for (int i=0; i<pgsalt->num_vertex; i++) {
-		if (pgsalt->model->vertex_is_valid(i)) {
+	for (unsigned int i=0; i<max_vertex; i++) {
+		if (pgsalt->model->vertex_is_valid(i) && (pgsalt->decimed_vertex<pgsalt->num_vertex)) {
 			vertex[0] = pgsalt->model->vertex(i).as.pos[0]; vertex[1] = pgsalt->model->vertex(i).as.pos[1]; vertex[2] = pgsalt->model->vertex(i).as.pos[2];
 			if(pgsalt->vertex.size>3) vertex[3] = 1.0f;
 			vertex += pgsalt->vertex.stride;
@@ -332,7 +338,7 @@ int gsalt_simplify(GSalt gsalt, int objective) {
 	int newFaces = 0;
 	if(pgsalt->indexes.type) {
 		ind16 = pgsalt->indexes.ptr.ui16;
-		for (int i=0; i<pgsalt->num_triangles; i++) {
+		for (int i=0; i<max_faces; i++) {
 			if (pgsalt->model->face_is_valid(i)) {
 				*(ind16++)=match[pgsalt->model->face(i).v[0]];
 				*(ind16++)=match[pgsalt->model->face(i).v[1]];

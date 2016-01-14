@@ -325,6 +325,16 @@ unsigned int MxStdModel::split_edge(unsigned int v1, unsigned int v2,
 
     unsigned int vnew = add_vertex(x,y,z);
 
+    if( normal_binding() == MX_PERVERTEX )
+        add_normal((normal(v1)[0]+normal(v2)[0])/2.0f, 
+            (normal(v1)[1]+normal(v2)[1])/2.0f,(normal(v1)[2]+normal(v2)[2])/2.0f);
+    if( color_binding() == MX_PERVERTEX )
+        add_color((color(v1).R()+color(v2).R())/2.0f, (color(v1).G()+color(v2).G())/2.0f,
+            (color(v1).B()+color(v2).B())/2.0f,(color(v1).A()+color(v2).A())/2.0f);
+    if( texcoord_binding() == MX_PERVERTEX )
+        add_texcoord((texcoord(v1).u[0]+texcoord(v2).u[0])/2.0f, 
+            (texcoord(v1).u[1]+texcoord(v2).u[1])/2.0f);
+
     for(unsigned int i=0; i<faces.length(); i++)
     {
 	unsigned int f = faces(i);
