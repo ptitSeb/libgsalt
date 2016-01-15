@@ -28,11 +28,11 @@
 // in decreasing order; eigenvectors are normalized.
 //
 static
-bool internal_jacobi(double a[3][3], double w[3], double v[3][3])
+bool internal_jacobi(real a[3][3], real w[3], real v[3][3])
 {
     int i, j, k, iq, ip;
-    double tresh, theta, tau, t, sm, s, h, g, c;
-    double b[3], z[3], tmp;
+    real tresh, theta, tau, t, sm, s, h, g, c;
+    real b[3], z[3], tmp;
 
     // initialize
     for (ip=0; ip<3; ip++) 
@@ -167,7 +167,7 @@ bool internal_jacobi(double a[3][3], double w[3], double v[3][3])
 
 bool jacobi(const Mat3& m, Vec3& eig_vals, Vec3 eig_vecs[3])
 {
-    double a[3][3], w[3], v[3][3];
+    real a[3][3], w[3], v[3][3];
     int i,j;
 
     for(i=0;i<3;i++) for(j=0;j<3;j++) a[i][j] = m(i,j);
@@ -183,9 +183,9 @@ bool jacobi(const Mat3& m, Vec3& eig_vals, Vec3 eig_vecs[3])
     return result;
 }
 
-bool jacobi(const Mat3& m, double *eig_vals, double *eig_vecs)
+bool jacobi(const Mat3& m, real *eig_vals, real *eig_vecs)
 {
-    double a[3][3],  v[3][3];
+    real a[3][3],  v[3][3];
     int i,j;
 
     for(i=0;i<3;i++) for(j=0;j<3;j++) a[i][j] = m(i,j);

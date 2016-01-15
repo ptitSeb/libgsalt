@@ -18,7 +18,7 @@
 #include "MxVec3.h"
 #include "MxVec4.h"
 
-extern double triangle_project_point(const Vec3& v0, const Vec3& v1,
+extern real triangle_project_point(const Vec3& v0, const Vec3& v1,
 				     const Vec3& v2, const Vec3& v,
 				     Vec3 *bary=NULL);
 
@@ -31,12 +31,14 @@ public:
     bool is_initialized;
     Vec3 min, max;
     Vec3 center;
-    double radius;
+    real radius;
     unsigned int points;
 
     void reset();
-    void add_point(const double *v, bool will_update=true);
+    void add_point(const real *v, bool will_update=true);
+#ifndef USE_FLOAT
     void add_point(const float *v, bool will_update=true);
+#endif
     void complete();
     void merge(const MxBounds&);
 

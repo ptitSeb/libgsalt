@@ -20,17 +20,17 @@
 // Uses Gaussian elimination with partial pivoting.
 
 #define SWAP(a, b, t)   {t = a; a = b; b = t;}
-static double internal_invert(MxMatrix& A, MxMatrix& B)
+static real internal_invert(MxMatrix& A, MxMatrix& B)
 {
     uint N = A.dim();
     uint i, j, k;
-    double max, t, det, pivot;
+    real max, t, det, pivot;
 
     /*---------- forward elimination ----------*/
 
     for (i=0; i<N; i++)                 /* put identity matrix in B */
         for (j=0; j<N; j++)
-            B(i, j) = (double)(i==j);
+            B(i, j) = (real)(i==j);
 
     det = 1.0;
     for (i=0; i<N; i++) {               /* eliminate in column i, below diag */
@@ -81,7 +81,7 @@ static double internal_invert(MxMatrix& A, MxMatrix& B)
 #undef SWAP
 
 
-double mxm_invert(MxMatrix& r, const MxMatrix& a)
+real mxm_invert(MxMatrix& r, const MxMatrix& a)
 {
     MxMatrix a2(a);
     return internal_invert(a2, r);

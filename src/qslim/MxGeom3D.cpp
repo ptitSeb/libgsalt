@@ -38,7 +38,7 @@ void MxBounds::reset()
     is_initialized = false;
 }
 
-void MxBounds::add_point(const double *v, bool will_update)
+void MxBounds::add_point(const real *v, bool will_update)
 {
     if( !is_initialized )
     {
@@ -64,7 +64,7 @@ void MxBounds::add_point(const double *v, bool will_update)
 	points++;
     }
 }
-
+#ifndef USE_FLOAT
 void MxBounds::add_point(const float *v, bool will_update)
 {
     if( !is_initialized )
@@ -91,10 +91,10 @@ void MxBounds::add_point(const float *v, bool will_update)
 	points++;
     }
 }
-
+#endif
 void MxBounds::complete()
 {
-    center /= (double)points;
+    center /= (real)points;
 
     Vec3 R1 = max-center;
     Vec3 R2 = min-center;
@@ -109,7 +109,7 @@ void MxBounds::merge(const MxBounds& b)
     points += b.points;
 
     Vec3 dC = b.center - center;
-    double dist = norm(dC);
+    real dist = norm(dC);
 
     if( dist + b.radius > radius )
     {

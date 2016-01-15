@@ -55,7 +55,7 @@ template< class Vec>
 inline typename Vec::value_type
     triangle_compactness(const Vec& v1, const Vec& v2, const Vec& v3)
 {
-    const double FOUR_ROOT3 = 6.928203230275509;
+    const real FOUR_ROOT3 = 6.928203230275509;
 
     return FOUR_ROOT3 * triangle_area(v1, v2, v3) /
 	( norm2(v2 - v1) + norm2(v3 - v2) + norm2(v1 - v3) );

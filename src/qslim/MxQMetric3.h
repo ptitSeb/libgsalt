@@ -18,57 +18,63 @@
 #include "MxMat3.h"
 #include "MxMat4.h"
 
-const double FEQ_EPS = 1e-6;
-inline bool  FEQ(double a, double b, double e=FEQ_EPS)  {return fabs(a-b)<e;}
+const real FEQ_EPS = 1e-6;
+inline bool  FEQ(real a, real b, real e=FEQ_EPS)  {return fabs(a-b)<e;}
 
 class MxQuadric3
 {
 private:
-    double a2, ab, ac, ad;
-    double     b2, bc, bd;
-    double         c2, cd;
-    double             d2;
+    real a2, ab, ac, ad;
+    real     b2, bc, bd;
+    real         c2, cd;
+    real             d2;
 
-    double r;
+    real r;
 
-    void init(double a, double b, double c, double d, double area);
-    void init(const Mat4& Q, double area);
+    void init(real a, real b, real c, real d, real area);
+    void init(const Mat4& Q, real area);
 
 public:
     MxQuadric3() { clear(); }
-    MxQuadric3(double a, double b, double c, double d, double area=1.0)
+    MxQuadric3(real a, real b, real c, real d, real area=1.0)
 	{ init(a, b, c, d, area); }
-    MxQuadric3(const float *n, double d, double area=1.0)
+#ifndef USE_FLOAT
+    MxQuadric3(const float *n, real d, real area=1.0)
 	{ init(n[X], n[Y], n[Z], d, area); }
-    MxQuadric3(const double *n, double d, double area=1.0)
+#endif
+    MxQuadric3(const real *n, real d, real area=1.0)
 	{ init(n[X], n[Y], n[Z], d, area); }
     MxQuadric3(const MxQuadric3& Q) { *this = Q; }
 
     Mat3 tensor() const;
     Vec3 vector() const { return Vec3(ad, bd, cd); }
-    double offset() const { return d2; }
-    double area() const { return r; }
+    real offset() const { return d2; }
+    real area() const { return r; }
     Mat4 homogeneous() const;
 
-    void set_coefficients(const double *);
-    void set_area(double a) { r=a; }
+    void set_coefficients(const real *);
+    void set_area(real a) { r=a; }
     void point_constraint(const float *);
 
-    void clear(double val=0.0) { a2=ab=ac=ad=b2=bc=bd=c2=cd=d2=r=val; }
+    void clear(real val=0.0) { a2=ab=ac=ad=b2=bc=bd=c2=cd=d2=r=val; }
     MxQuadric3& operator=(const MxQuadric3& Q);
     MxQuadric3& operator+=(const MxQuadric3& Q);
     MxQuadric3& operator-=(const MxQuadric3& Q);
-    MxQuadric3& operator*=(double s);
+    MxQuadric3& operator*=(real s);
     MxQuadric3& transform(const Mat4& P);
 
-    double evaluate(double x, double y, double z) const;
-    double evaluate(const double *v) const {return evaluate(v[X], v[Y], v[Z]);}
-    double evaluate(const float *v) const  {return evaluate(v[X], v[Y], v[Z]);}
+    real evaluate(real x, real y, real z) const;
+    real evaluate(const real *v) const {return evaluate(v[X], v[Y], v[Z]);}
+#ifndef USE_FLOAT
+    real evaluate(const float *v) const  {return evaluate(v[X], v[Y], v[Z]);}
+#endif
 
-    double operator()(double x, double y, double z) const
+    real operator()(real x, real y, real z) const
 	{ return evaluate(x, y, z); }
-    double operator()(const double *v) const {return evaluate(v[X],v[Y],v[Z]);}
-    double operator()(const float *v) const  {return evaluate(v[X],v[Y],v[Z]);}
+    real operator()(const real *v) const {return evaluate(v[X],v[Y],v[Z]);}
+#ifndef USE_FLOAT
+    real operator()(const float *v) const  {return evaluate(v[X],v[Y],v[Z]);}
+#endif
 
     bool optimize(Vec3& v) const;
     bool optimize(float *x, float *y, float *z) const;
@@ -125,7 +131,7 @@ inline istream& operator>>(istream& in, MxQuadric3& Q) { return Q.read(in); }
 #define MX_CHARCOAL_ELLIPSOIDS 0x3
 
 extern void mx_quadric_shading(int c=MX_GREEN_ELLIPSOIDS, bool twosided=true);
-extern void mx_draw_quadric(const MxQuadric3& Q, double r, const float*v=NULL);
+extern void mx_draw_quadric(const MxQuadric3& Q, real r, const float*v=NULL);
 extern void mx_draw_osculant(float k1, float k2, float extent=1.0);
 */
 // MXQMETRIC3_INCLUDED

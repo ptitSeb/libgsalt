@@ -121,13 +121,15 @@ public:
     const char *texmap_name() const { return tex_name; }
     uint add_texmap(MxRaster *, const char *name);
 */
-    void compute_face_normal(MxFaceID, double *, bool will_unitize=true);
+    void compute_face_normal(MxFaceID, real *, bool will_unitize=true);
+#ifndef USE_FLOAT
     void compute_face_normal(MxFaceID, float *, bool will_unitize=true);
+#endif
     void compute_face_plane(MxFaceID, float *, bool will_unitize=true);
-    double compute_face_area(MxFaceID);
-    double compute_face_perimeter(MxFaceID, bool *edge_flags=NULL);
+    real compute_face_area(MxFaceID);
+    real compute_face_perimeter(MxFaceID, bool *edge_flags=NULL);
 
-    double compute_corner_angle(MxFaceID, uint);
+    real compute_corner_angle(MxFaceID, uint);
 };
 
 

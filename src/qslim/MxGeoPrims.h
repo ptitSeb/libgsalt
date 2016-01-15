@@ -64,9 +64,11 @@ public:
 	{ as.chan.r=_ftop(r);  as.chan.g=_ftop(g);  as.chan.b=_ftop(b); }
     void set(float r, float g, float b, float a)
 	{ as.chan.r=_ftop(r);  as.chan.g=_ftop(g);  as.chan.b=_ftop(b); as.chan.a=_ftop(a); }
+#ifndef USE_FLOAT
     void set(const float *c)
 	{ as.chan.r=_ftop(c[0]);as.chan.g=_ftop(c[1]);as.chan.b=_ftop(c[2]); }
-    void set(const double *c)
+#endif
+    void set(const real *c)
 	{ as.chan.r=_ftop(c[0]);as.chan.g=_ftop(c[1]);as.chan.b=_ftop(c[2]); }
 
     float R() const { return _ptof(as.chan.r); }
@@ -128,25 +130,28 @@ class MxNormal
 private:
     inline short _ftos(float x)
 	{ return (short)rint((x>1.0f?1.0f:x)*(float)SHRT_MAX); }
-    inline short _dtos(double x)
-	{ return (short)rint((x>1.0?1.0:x)*(double)SHRT_MAX); }
-
+    inline short _dtos(real x)
+	{ return (short)rint((x>1.0?1.0:x)*(real)SHRT_MAX); }
     inline float _stof(short s) const { return (float)s/(float)SHRT_MAX; }
-    inline double _stod(short s) const { return (double)s/(double)SHRT_MAX; }
+    inline real _stod(short s) const { return (real)s/(real)SHRT_MAX; }
 
     short dir[3];
 
 public:
     MxNormal() { }
     MxNormal(float x, float y, float z) { set(x,y,z); }
+#ifndef USE_FLOAT
     MxNormal(const float *v) { set(v); }
-    MxNormal(const double *v) { set(v); }
+#endif
+    MxNormal(const real *v) { set(v); }
 
-    inline void set(double x, double y, double z)
+    inline void set(real x, real y, real z)
 	{ dir[0]=_dtos(x);  dir[1]=_dtos(y);  dir[2]=_dtos(z); }
+#ifndef USE_FLOAT
     inline void set(const float *v)
 	{ dir[0]=_ftos(v[0]);  dir[1]=_ftos(v[1]);  dir[2]=_ftos(v[2]); }
-    inline void set(const double *v)
+#endif
+    inline void set(const real *v)
 	{ dir[0]=_dtos(v[0]);  dir[1]=_dtos(v[1]);  dir[2]=_dtos(v[2]); }
 
     float operator[](uint i) const { AssertBound(i<3); return _stof(dir[i]); }

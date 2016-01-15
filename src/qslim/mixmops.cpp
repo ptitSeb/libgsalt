@@ -26,10 +26,10 @@
 // Uses Gaussian elimination with partial pivoting.
 //
 static
-double internal_solve(double *_a, double *b, const int N)
+real internal_solve(real *_a, real *b, const int N)
 {
     int i, j, k;
-    double max, t, det, sum, pivot;
+    real max, t, det, sum, pivot;
 
     /*---------- forward elimination ----------*/
 
@@ -81,16 +81,16 @@ double internal_solve(double *_a, double *b, const int N)
 // Uses Gaussian elimination with partial pivoting.
 //
 static
-double internal_invert(double *_a, double *_b, const int N)
+real internal_invert(real *_a, real *_b, const int N)
 {
     uint i, j, k;
-    double max, t, det, pivot;
+    real max, t, det, pivot;
 
     /*---------- forward elimination ----------*/
 
     for (i=0; i<N; i++)                 /* put identity matrix in B */
         for (j=0; j<N; j++)
-            B(i, j) = (double)(i==j);
+            B(i, j) = (real)(i==j);
 
     det = 1.0;
     for (i=0; i<N; i++) {               /* eliminate in column i, below diag */
@@ -141,11 +141,11 @@ double internal_invert(double *_a, double *_b, const int N)
 #undef A
 #undef B
 #undef SWAP
-
+#ifndef USE_FLOAT
 float mxm_invert(float *r, const float *a, const int N)
 {
-    mxm_local_block(a2, double, N);
-    mxm_local_block(r2, double, N);
+    mxm_local_block(a2, real, N);
+    mxm_local_block(r2, real, N);
 
     uint i;
     for(i=0; i<N*N; i++) a2[i] = a[i];
@@ -156,22 +156,22 @@ float mxm_invert(float *r, const float *a, const int N)
     mxm_free_local(r2);
     return det;
 }
-
-double mxm_invert(double *r, const double *a, const int N)
+#endif
+real mxm_invert(real *r, const real *a, const int N)
 {
-    mxm_local_block(a2, double, N);
+    mxm_local_block(a2, real, N);
     mxm_set(a2, a, N);
-    double det = internal_invert(a2, r, N);
+    real det = internal_invert(a2, r, N);
     mxm_free_local(a2);
     return det;
 }
 
-double mxm_solve(double *x, const double *A, const double *b, const int N)
+real mxm_solve(real *x, const real *A, const real *b, const int N)
 {
-    mxm_local_block(a2, double, N);
+    mxm_local_block(a2, real, N);
     mxm_set(a2, A, N);
     mxv_set(x, b, N);
-    double det = internal_solve(a2, x, N);
+    real det = internal_solve(a2, x, N);
     mxm_free_local(a2);
     return det;
 }
@@ -182,9 +182,9 @@ double mxm_solve(double *x, const double *A, const double *b, const int N)
 // The factorization is valid as long as the returned nullity == 0
 // U contains the upper triangular factor itself.
 //
-int mxm_cholesky(double *U, const double *A, const int N)
+int mxm_cholesky(real *U, const real *A, const int N)
 {
-    double sum;
+    real sum;
 
     int nullity = 0;
     mxm_set(U, 0.0, N);

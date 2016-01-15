@@ -171,7 +171,7 @@ template<class T> inline TVec3<T> proj(const TVec4<T>& v)
     return u;
 }
 
-typedef TVec4<double> Vec4;
+typedef TVec4<real> Vec4;
 typedef TVec4<float>  Vec4f;
 
 // GFXVEC4_INCLUDED

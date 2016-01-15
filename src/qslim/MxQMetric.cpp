@@ -19,7 +19,7 @@ void symmetric_subfrom(MxMatrix& A, const MxVector& a, const MxVector& b)
 }
 
 MxQuadric::MxQuadric(const MxVector& p1,const MxVector& p2,const MxVector& p3,
-		     double area)
+		     real area)
     : A(p1.dim()), b(p1.dim())
 {
     AssertBound( p1.dim()==p2.dim() && p1.dim()==p3.dim() );
@@ -29,8 +29,8 @@ MxQuadric::MxQuadric(const MxVector& p1,const MxVector& p2,const MxVector& p3,
     MxVector t = e1;
     t*=e1*e2; e2-=t; unitize(e2);        // e2 = p3-p1-e1*(e1*(p3-p1)); unitize
 
-    double p1e1 = p1*e1;
-    double p1e2 = p1*e2;
+    real p1e1 = p1*e1;
+    real p1e2 = p1*e2;
 
     mxm_identity(A, A.dim());
     symmetric_subfrom(A, e1,e1);
@@ -83,7 +83,7 @@ MxMatrix& MxQuadric::homogeneous(MxMatrix& H) const
     return H;
 }
 
-double MxQuadric::evaluate(const MxVector& v) const
+real MxQuadric::evaluate(const MxVector& v) const
 {
     AssertBound( v.dim() == b.dim() );
     return v*(A*v) + 2*(b*v) + c;
@@ -93,7 +93,7 @@ bool MxQuadric::optimize(MxVector& v) const
 {
     MxMatrix Ainv(A.dim());
 
-    double det = A.invert(Ainv);
+    real det = A.invert(Ainv);
     if( FEQ(det, 0.0, 1e-12) )
 	return false;
 

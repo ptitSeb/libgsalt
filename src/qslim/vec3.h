@@ -35,8 +35,10 @@ public:
 #else
     // For MixKit code, we need these constructors instead.
     // They SHOULD NOT be used in new code.
+#ifndef USE_FLOAT
     TVec3(const float *v) { elt[0]=v[0]; elt[1]=v[1]; elt[2]=v[2]; }
-    TVec3(const double *v) { elt[0]=v[0]; elt[1]=v[1]; elt[2]=v[2]; }
+#endif
+    TVec3(const real *v) { elt[0]=v[0]; elt[1]=v[1]; elt[2]=v[2]; }
 #endif
     template<class U> TVec3& operator=(const TVec3<U>& v)
 	{ elt[0]=v[0];  elt[1]=v[1];  elt[2]=v[2];  return *this; }
@@ -172,7 +174,7 @@ template<class T> inline TVec2<T> proj(const TVec3<T>& v)
     return u;
 }
 
-typedef TVec3<double> Vec3;
+typedef TVec3<real> Vec3;
 typedef TVec3<float>  Vec3f;
 
 // GFXVEC3_INCLUDED

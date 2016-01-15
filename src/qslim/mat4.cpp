@@ -31,13 +31,13 @@ Mat4 scaling_matrix(const Vec3& s)
 		Vec4(0,    0,    0,    1));
 }
 
-Mat4 rotation_matrix_rad(double theta, const Vec3& axis)
+Mat4 rotation_matrix_rad(real theta, const Vec3& axis)
 {
-    double c=cos(theta), s=sin(theta),
+    real c=cos(theta), s=sin(theta),
 	xx=axis[0]*axis[0],  yy=axis[1]*axis[1],  zz=axis[2]*axis[2],
 	xy=axis[0]*axis[1],  yz=axis[1]*axis[2],  xz=axis[0]*axis[2];
 
-    double xs=axis[0]*s, ys=axis[1]*s, zs=axis[2]*s;
+    real xs=axis[0]*s, ys=axis[1]*s, zs=axis[2]*s;
 
     Mat4 M;
     M(0,0)=xx*(1-c)+c;  M(0,1)=xy*(1-c)-zs;  M(0,2)=xz*(1-c)+ys;  M(0,3) = 0;
@@ -48,9 +48,9 @@ Mat4 rotation_matrix_rad(double theta, const Vec3& axis)
     return M;
 }
 
-Mat4 perspective_matrix(double fovy, double aspect, double zmin, double zmax)
+Mat4 perspective_matrix(real fovy, real aspect, real zmin, real zmax)
 {
-    double A, B;
+    real A, B;
     Mat4 M;
 
     if( zmax==0.0 )
@@ -63,7 +63,7 @@ Mat4 perspective_matrix(double fovy, double aspect, double zmin, double zmax)
 	B = (2*zmax*zmin)/(zmin-zmax);
     }
 
-    double f = 1.0/tan(fovy*M_PI/180.0/2.0);
+    real f = 1.0/tan(fovy*M_PI/180.0/2.0);
     M(0,0) = f/aspect;
     M(1,1) = f;
     M(2,2) = A;
@@ -91,7 +91,7 @@ Mat4 lookat_matrix(const Vec3& from, const Vec3& at, const Vec3& v_up)
     return M * translation_matrix(-from);
 }
 
-Mat4 viewport_matrix(double w, double h)
+Mat4 viewport_matrix(real w, real h)
 {
     return scaling_matrix(Vec3(w/2.0, -h/2.0, 1)) *
 	translation_matrix(Vec3(1, -1, 0));
@@ -121,10 +121,10 @@ Mat4 adjoint(const Mat4& m)
     return A;
 }
 
-double invert_cramer(Mat4& inv, const Mat4& m)
+real invert_cramer(Mat4& inv, const Mat4& m)
 {
     Mat4 A = adjoint(m);
-    double d = A[0] * m[0];
+    real d = A[0] * m[0];
 
     if( d==0.0 )
 	return 0.0;
@@ -143,17 +143,17 @@ double invert_cramer(Mat4& inv, const Mat4& m)
 // If matrix A is singular, returns 0 and leaves trash in B.
 //
 #define SWAP(a, b, t)   {t = a; a = b; b = t;}
-double invert(Mat4& B, const Mat4& m)
+real invert(Mat4& B, const Mat4& m)
 {
     Mat4 A = m;
     int i, j, k;
-    double max, t, det, pivot;
+    real max, t, det, pivot;
 
     /*---------- forward elimination ----------*/
 
     for (i=0; i<4; i++)                 /* put identity matrix in B */
         for (j=0; j<4; j++)
-            B(i, j) = (double)(i==j);
+            B(i, j) = (real)(i==j);
 
     det = 1.0;
     for (i=0; i<4; i++) {               /* eliminate in column i, below diag */

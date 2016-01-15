@@ -147,7 +147,7 @@ template<class T> inline void unitize(TVec2<T>& v)
     if( l!=1.0 && l!=0.0 )  v /= sqrt(l);
 }
 
-typedef TVec2<double> Vec2;
+typedef TVec2<real> Vec2;
 typedef TVec2<float>  Vec2f;
 
 // GFXVEC2_INCLUDED

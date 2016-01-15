@@ -45,10 +45,10 @@ public:
     int weighting_policy;
     bool will_join_only;
 
-    double boundary_weight;
-    double compactness_ratio;
-    double meshing_penalty;
-    double local_validity_threshold;
+    real boundary_weight;
+    real compactness_ratio;
+    real meshing_penalty;
+    real local_validity_threshold;
     uint vertex_degree_limit;
 
 public:

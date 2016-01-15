@@ -157,11 +157,11 @@ MxEdgeQSlim::~MxEdgeQSlim()
 //                  is marked with the number of involved vertices it has.
 //
 
-double MxEdgeQSlim::check_local_compactness(uint v1, uint/*v2*/,
+real MxEdgeQSlim::check_local_compactness(uint v1, uint/*v2*/,
 					    const float *vnew)
 {
     const MxFaceList& N1 = m->neighbors(v1);
-    double c_min = 1.0;
+    real c_min = 1.0;
 
     for(uint i=0; i<N1.length(); i++)
 	if( m->face_mark(N1[i]) == 1 )
@@ -171,7 +171,7 @@ double MxEdgeQSlim::check_local_compactness(uint v1, uint/*v2*/,
 	    for(uint j=0; j<3; j++)
 		f_after[j] = (f[j]==v1)?Vec3(vnew):Vec3(m->vertex(f[j]));
 
-	    double c=triangle_compactness(f_after[0], f_after[1], f_after[2]);
+	    real c=triangle_compactness(f_after[0], f_after[1], f_after[2]);
 
 	    if( c < c_min ) c_min = c;
 	}
@@ -179,9 +179,9 @@ double MxEdgeQSlim::check_local_compactness(uint v1, uint/*v2*/,
     return c_min;
 }
 
-double MxEdgeQSlim::check_local_inversion(uint v1,uint/*v2*/,const float *vnew)
+real MxEdgeQSlim::check_local_inversion(uint v1,uint/*v2*/,const float *vnew)
 {
-    double Nmin = 1.0;
+    real Nmin = 1.0;
     const MxFaceList& N1 = m->neighbors(v1);
 
     for(uint i=0; i<N1.length(); i++)
@@ -195,7 +195,7 @@ double MxEdgeQSlim::check_local_inversion(uint v1,uint/*v2*/,const float *vnew)
 	    for(uint j=0; j<3; j++)
 		f_after[j] = (f[j]==v1)?Vec3(vnew):Vec3(m->vertex(f[j]));
 
-	    double delta = n_before *
+	    real delta = n_before *
 		triangle_normal(f_after[0], f_after[1], f_after[2]);
 
 	    if( delta < Nmin ) Nmin = delta;
@@ -273,8 +273,8 @@ void MxEdgeQSlim::apply_mesh_penalties(MxQSlimEdge *info)
     for(i=0; i<N1.length(); i++) m->face_mark(N1[i], 1);
     for(i=0; i<N2.length(); i++) m->face_mark(N2[i], m->face_mark(N2[i])+1);
 
-    double base_error = info->heap_key();
-    double bias = 0.0;
+    real base_error = info->heap_key();
+    real bias = 0.0;
     
     // Check for excess over degree bounds.
     //
@@ -301,9 +301,9 @@ void MxEdgeQSlim::apply_mesh_penalties(MxQSlimEdge *info)
 
     if( compactness_ratio > 0.0 )
     {
-	double c1_min=check_local_compactness(info->v1, info->v2, info->vnew);
-	double c2_min=check_local_compactness(info->v2, info->v1, info->vnew);
-	double c_min = MIN(c1_min, c2_min);
+	real c1_min=check_local_compactness(info->v1, info->v2, info->vnew);
+	real c2_min=check_local_compactness(info->v2, info->v1, info->vnew);
+	real c_min = MIN(c1_min, c2_min);
 
 	// !!BUG: There's a small problem with this: it ignores the scale
 	//        of the errors when adding the bias.  For instance, enabling
@@ -320,8 +320,8 @@ void MxEdgeQSlim::apply_mesh_penalties(MxQSlimEdge *info)
     }
 
 #if USE_OLD_INVERSION_CHECK
-    double Nmin1 = check_local_inversion(info->v1, info->v2, info->vnew);
-    double Nmin2 = check_local_inversion(info->v2, info->v1, info->vnew);
+    real Nmin1 = check_local_inversion(info->v1, info->v2, info->vnew);
+    real Nmin2 = check_local_inversion(info->v2, info->v1, info->vnew);
     if( MIN(Nmin1, Nmin2) < 0.0 )
 	bias += meshing_penalty;
 #endif
@@ -336,7 +336,7 @@ void MxEdgeQSlim::compute_target_placement(MxQSlimEdge *info)
     const Quadric &Qi=quadrics(i), &Qj=quadrics(j);
 
     Quadric Q = Qi;  Q += Qj;
-    double e_min;
+    real e_min;
 
     if( placement_policy==MX_PLACE_OPTIMAL &&
 	Q.optimize(&info->vnew[X], &info->vnew[Y], &info->vnew[Z]) )
@@ -352,7 +352,7 @@ void MxEdgeQSlim::compute_target_placement(MxQSlimEdge *info)
 	    e_min = Q(best);
 	else
 	{
-	    double ei=Q(vi), ej=Q(vj);
+	    real ei=Q(vi), ej=Q(vj);
 
 	    if( ei < ej ) { e_min = ei; best = vi; }
 	    else          { e_min = ej; best = vj; }
@@ -360,7 +360,7 @@ void MxEdgeQSlim::compute_target_placement(MxQSlimEdge *info)
 	    if( placement_policy>=MX_PLACE_ENDORMID )
 	    {
 		Vec3 mid = (vi+vj)/2.0;
-		double e_mid = Q(mid);
+		real e_mid = Q(mid);
 
 		if( e_mid < e_min ) { e_min = e_mid; best = mid; }
 	    }
@@ -629,10 +629,10 @@ void MxFaceQSlim::compute_face_info(MxFaceID f)
     else
     {
       Vec3 v1(m->vertex(i)), v2(m->vertex(j)), v3(m->vertex(k));
-      double e1=Q(v1), e2=Q(v2), e3=Q(v3);
+      real e1=Q(v1), e2=Q(v2), e3=Q(v3);
 
       Vec3 best;
-      double e_min;
+      real e_min;
 
       if( e1<=e2 && e1<=e3 ) { e_min=e1; best=v1; }
       else if( e2<=e1 && e2<=e3 ) { e_min=e2; best=v2; }

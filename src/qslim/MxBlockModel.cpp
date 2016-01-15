@@ -260,7 +260,7 @@ void MxBlockModel::texcoord_binding(unsigned char b)
 //
 // Utility methods for computing characteristics of faces.
 //
-
+#ifndef USE_FLOAT
 void MxBlockModel::compute_face_normal(MxFaceID f, float *n, bool will_unitize)
 {
     float *v1 = vertex(face(f)[0]);
@@ -275,14 +275,14 @@ void MxBlockModel::compute_face_normal(MxFaceID f, float *n, bool will_unitize)
     if( will_unitize )
 	mxv_unitize(n, 3);
 }
-
-void MxBlockModel::compute_face_normal(MxFaceID f, double *n,bool will_unitize)
+#endif
+void MxBlockModel::compute_face_normal(MxFaceID f, real *n,bool will_unitize)
 {
     float *v1 = vertex(face(f)[0]);
     float *v2 = vertex(face(f)[1]);
     float *v3 = vertex(face(f)[2]);
 
-    double a[3], b[3];
+    real a[3], b[3];
     for(int i=0; i<3; i++) { a[i] = v2[i]-v1[i];  b[i] = v3[i]-v1[i]; }
 
     mxv_cross3(n, a, b);
@@ -296,17 +296,17 @@ void MxBlockModel::compute_face_plane(MxFaceID f, float *p, bool will_unitize)
     p[3] = -mxv_dot(p, corner(f, 0), 3);
 }
 
-double MxBlockModel::compute_face_area(MxFaceID f)
+real MxBlockModel::compute_face_area(MxFaceID f)
 {
-    double n[3];
+    real n[3];
 
     compute_face_normal(f, n, false);
     return 0.5 * mxv_norm(n, 3);
 }
 
-double MxBlockModel::compute_face_perimeter(MxFaceID fid, bool *flags)
+real MxBlockModel::compute_face_perimeter(MxFaceID fid, bool *flags)
 {
-    double perim = 0.0;
+    real perim = 0.0;
     const MxFace& f = face(fid);
 
     for(uint i=0; i<3; i++)
@@ -321,7 +321,7 @@ double MxBlockModel::compute_face_perimeter(MxFaceID fid, bool *flags)
     return perim;
 }
 
-double MxBlockModel::compute_corner_angle(MxFaceID f, uint i)
+real MxBlockModel::compute_corner_angle(MxFaceID f, uint i)
 {
     uint i_prev = (i==0)?2:i-1;
     uint i_next = (i==2)?0:i+1;

@@ -17,7 +17,7 @@
 #include "mat3.h"
 
 extern bool jacobi(const Mat3& m, Vec3& vals, Vec3 vecs[3]);
-extern bool jacobi(const Mat3& m, double *vals, double *vecs);
+extern bool jacobi(const Mat3& m, real *vals, real *vecs);
 
 extern bool fast_jacobi(const Mat3& m, Vec3& vals, Vec3 vecs[3]);
 

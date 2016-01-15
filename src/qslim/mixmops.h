@@ -22,7 +22,7 @@
 #endif
 
 #ifndef __T
-#  define __T double
+#  define __T real
 #endif
 
 #define forall(i, N) for(unsigned int i=0; i<N*N; i++)
@@ -106,7 +106,7 @@ inline __T *mxm_mul(__T *r, const __T *a, const __T *b, __DIM)
 }
 
 //
-// Only actually implemented for double (and maybe float).
+// Only actually implemented for real (and maybe float).
 //
 extern __T mxm_invert(__T *r, const __T *a, __DIM);
 extern __T mxm_solve(__T *x, const __T *A, const __T *b, __DIM);

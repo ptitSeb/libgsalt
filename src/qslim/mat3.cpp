@@ -12,7 +12,7 @@
 
 Mat3 Mat3::I() { return Mat3(Vec3(1,0,0), Vec3(0,1,0), Vec3(0,0,1)); }
 
-Mat3 &Mat3::diag(double d)
+Mat3 &Mat3::diag(real d)
 {
     *this = 0.0;
     row[0][0] = row[1][1] = row[2][2] = d;
@@ -27,7 +27,7 @@ Mat3 diag(const Vec3& v)
 Mat3 Mat3::outer_product(const Vec3& v)
 {
     Mat3 A;
-    double x=v[0], y=v[1], z=v[2];
+    real x=v[0], y=v[1], z=v[2];
 
     A(0,0) = x*x;  A(0,1) = x*y;  A(0,2) = x*z;
     A(1,0)=A(0,1); A(1,1) = y*y;  A(1,2) = y*z;
@@ -65,10 +65,10 @@ Mat3 adjoint(const Mat3& m)
 		m[0]^m[1]);
 }
 
-double invert(Mat3& inv, const Mat3& m)
+real invert(Mat3& inv, const Mat3& m)
 {
     Mat3 A = adjoint(m);
-    double d = A[0] * m[0];
+    real d = A[0] * m[0];
 
     if( d==0.0 )
 	return 0.0;

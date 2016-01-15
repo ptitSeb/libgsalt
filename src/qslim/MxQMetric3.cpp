@@ -13,7 +13,7 @@
 
 #include "MxMat2.h"
 
-void MxQuadric3::init(double a, double b, double c, double d, double area)
+void MxQuadric3::init(real a, real b, real c, real d, real area)
 {
     a2 = a*a;  ab = a*b;  ac = a*c;  ad = a*d;
                b2 = b*b;  bc = b*c;  bd = b*d;
@@ -23,7 +23,7 @@ void MxQuadric3::init(double a, double b, double c, double d, double area)
     r = area;
 }
 
-void MxQuadric3::init(const Mat4& Q, double area)
+void MxQuadric3::init(const Mat4& Q, real area)
 {
     a2 = Q(0,0);  ab = Q(0,1);  ac = Q(0,2);  ad = Q(0,3);
                   b2 = Q(1,1);  bc = Q(1,2);  bd = Q(1,3);
@@ -48,7 +48,7 @@ Mat4 MxQuadric3::homogeneous() const
 		Vec4(ad, bd, cd, d2));
 }
 
-void MxQuadric3::set_coefficients(const double *v)
+void MxQuadric3::set_coefficients(const real *v)
 {
     a2 = v[0];  ab = v[1];  ac = v[2];  ad = v[3];
                 b2 = v[4];  bc = v[5];  bd = v[6];
@@ -104,7 +104,7 @@ MxQuadric3& MxQuadric3::operator-=(const MxQuadric3& Q)
     return *this;
 }
 
-MxQuadric3& MxQuadric3::operator*=(double s)
+MxQuadric3& MxQuadric3::operator*=(real s)
 {
     // Scale coefficients
     a2 *= s;  ab *= s;  ac *= s;  ad *= s;
@@ -133,7 +133,7 @@ MxQuadric3& MxQuadric3::transform(const Mat4& P)
 }
 
 
-double MxQuadric3::evaluate(double x, double y, double z) const
+real MxQuadric3::evaluate(real x, real y, real z) const
 {
     // Evaluate vAv + 2bv + c
 
@@ -146,7 +146,7 @@ double MxQuadric3::evaluate(double x, double y, double z) const
 bool MxQuadric3::optimize(Vec3& v) const
 {
     Mat3 Ainv;
-    double det = invert(Ainv, tensor());
+    real det = invert(Ainv, tensor());
     if( FEQ(det, 0.0, 1e-12) )
 	return false;
 
@@ -177,11 +177,11 @@ bool MxQuadric3::optimize(Vec3& v, const Vec3& v1, const Vec3& v2) const
     Vec3 Av2 = A*v2;
     Vec3 Ad  = A*d;
 
-    double denom = 2.0*d*Ad;
+    real denom = 2.0*d*Ad;
     if( FEQ(denom, 0.0, 1e-12) )
 	return false;
 
-    double a =  ( -2*(vector()*d) - (d*Av2) - (v2*Ad) ) / ( 2*(d*Ad) );
+    real a =  ( -2*(vector()*d) - (d*Av2) - (v2*Ad) ) / ( 2*(d*Ad) );
 
     if( a<0.0 ) a=0.0; else if( a>1.0 ) a=1.0;
 
@@ -202,21 +202,21 @@ bool MxQuadric3::optimize(Vec3& v, const Vec3& v1,
     Vec3 Ad23 = A*d23;
     Vec3 Av3  = A*v3;
 
-    double d13_d23 = (d13*Ad23) + (d23*Ad13);
-    double v3_d13  = (d13*Av3) + (v3*Ad13);
-    double v3_d23  = (d23*Av3) + (v3*Ad23);
+    real d13_d23 = (d13*Ad23) + (d23*Ad13);
+    real v3_d13  = (d13*Av3) + (v3*Ad13);
+    real v3_d23  = (d23*Av3) + (v3*Ad23);
 
-    double d23Ad23 = d23*Ad23;
-    double d13Ad13 = d13*Ad13;
+    real d23Ad23 = d23*Ad23;
+    real d13Ad13 = d13*Ad13;
 
-    double denom = d13Ad13*d23Ad23 - 2*d13_d23;
+    real denom = d13Ad13*d23Ad23 - 2*d13_d23;
     if( FEQ(denom, 0.0, 1e-12) )
 	return false;
 
-    double a = ( d23Ad23*(2*(B*d13) + v3_d13) -
+    real a = ( d23Ad23*(2*(B*d13) + v3_d13) -
 		  d13_d23*(2*(B*d23) + v3_d23) ) / -denom;
 
-    double b = ( d13Ad13*(2*(B*d23) + v3_d23) -
+    real b = ( d13Ad13*(2*(B*d23) + v3_d23) -
 		  d13_d23*(2*(B*d13) + v3_d13) ) / -denom;
 
     if( a<0.0 ) a=0.0; else if( a>1.0 ) a=1.0;

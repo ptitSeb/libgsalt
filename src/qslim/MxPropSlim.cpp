@@ -134,7 +134,7 @@ void MxPropSlim::pack_prop_to_vector(MxVertexID id, MxVector& v, uint target)
     }
 }
 
-static inline void CLAMP(double& v, double lo, double hi)
+static inline void CLAMP(real& v, real lo, real hi)
 {
     if( v<lo ) v = lo;
     if( v>hi ) v = hi;
@@ -308,7 +308,7 @@ void MxPropSlim::compute_target_placement(edge_info *info)
     const MxQuadric &Qi=quadric(i), &Qj=quadric(j);
     MxQuadric Q=Qi;  Q+=Qj;
 
-    double err;
+    real err;
 
     if( Q.optimize(info->target) )
     {
@@ -323,8 +323,8 @@ void MxPropSlim::compute_target_placement(edge_info *info)
 	pack_to_vector(i, v_i);
 	pack_to_vector(j, v_j);
 
-	double e_i = Q(v_i);
-	double e_j = Q(v_j);
+	real e_i = Q(v_i);
+	real e_j = Q(v_j);
 
 	if( e_i<=e_j )
 	{
@@ -488,7 +488,7 @@ void MxPropSlim::compute_edge_info(edge_info *info)
 
 //     if( will_normalize_error )
 //     {
-//         double e_max = Q_max(info->vnew);
+//         real e_max = Q_max(info->vnew);
 //         if( weight_by_area )
 //             e_max /= Q_max.area();
 

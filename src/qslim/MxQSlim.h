@@ -59,8 +59,8 @@ private:
     MxPairContraction conx_tmp;
 
 protected:
-    double check_local_compactness(uint v1, uint v2, const float *vnew);
-    double check_local_inversion(uint v1, uint v2, const float *vnew);
+    real check_local_compactness(uint v1, uint v2, const float *vnew);
+    real check_local_inversion(uint v1, uint v2, const float *vnew);
     uint check_local_validity(uint v1, uint v2, const float *vnew);
     uint check_local_degree(uint v1, uint v2, const float *vnew);
     void apply_mesh_penalties(MxQSlimEdge *);

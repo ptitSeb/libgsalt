@@ -19,12 +19,12 @@
 #undef __T
 #endif
 
-const double FEQ_EPS2 = 1e-12;
-
+const real FEQ_EPS2 = 1e-12;
+#ifndef USE_FLOAT
 #define __T float
 #include "mixvops.h"
-
-#define __T double
+#endif
+#define __T real
 #include "mixvops.h"
 
 ////////////////////////////////////////////////////////////////////////
@@ -105,14 +105,14 @@ public:
 
 #include "MxBlock.h"
 
-class MxVector : public MxBlock<double>
+class MxVector : public MxBlock<real>
 {
 public:
-    MxVector(unsigned int n) : MxBlock<double>(n) {mxv_set(*this,0.0,dim());}
-    MxVector(const MxVector& v) : MxBlock<double>(v.length()) { copy(v); }
+    MxVector(unsigned int n) : MxBlock<real>(n) {mxv_set(*this,0.0,dim());}
+    MxVector(const MxVector& v) : MxBlock<real>(v.length()) { copy(v); }
 
     MxVector& operator=(const MxVector& v)  { copy(v); return *this; }
-    MxVector& operator=(double d) { mxv_set(*this, d, dim()); return *this; }
+    MxVector& operator=(real d) { mxv_set(*this, d, dim()); return *this; }
 
     unsigned int dim() const { return length(); }
 
@@ -120,20 +120,20 @@ public:
 	{ mxv_addinto(*this, v, dim()); return *this; }
     MxVector& operator-=(const MxVector& v)
 	{ mxv_subfrom(*this, v, dim()); return *this; }
-    MxVector& operator*=(double d)
+    MxVector& operator*=(real d)
 	{ mxv_scale(*this, d, dim()); return *this; }
-    MxVector& operator/=(double d)
+    MxVector& operator/=(real d)
 	{ mxv_invscale(*this, d, dim()); return *this; }
 
-    double operator*(const MxVector& v) const {return mxv_dot(*this,v,dim());}
+    real operator*(const MxVector& v) const {return mxv_dot(*this,v,dim());}
 };
 
 
 // Convenient wrappers for mixvops functionality
 //
-inline double norm(const MxVector& v) { return mxv_norm(v, v.dim()); }
-inline double norm2(const MxVector& v) { return mxv_dot(v, v, v.dim()); }
-inline double unitize(MxVector& v) { return mxv_unitize(v, v.dim()); }
+inline real norm(const MxVector& v) { return mxv_norm(v, v.dim()); }
+inline real norm2(const MxVector& v) { return mxv_dot(v, v, v.dim()); }
+inline real unitize(MxVector& v) { return mxv_unitize(v, v.dim()); }
 /*
 inline ostream&
 operator<<(ostream& out,const MxVector& v) { return mxv_write(out,v,v.dim()); }

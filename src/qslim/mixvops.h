@@ -33,7 +33,7 @@
 
 #if !defined(MIXVOPS_USE_TEMPLATES)
 #  ifndef __T
-#    define __T double
+#    define __T real
 #  endif
 #  define __LINKAGE inline
 #else

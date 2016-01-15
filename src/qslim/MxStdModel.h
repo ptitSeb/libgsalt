@@ -209,8 +209,8 @@ public:
 
 /*
 extern void mx_render_model(MxStdModel&);
-extern void mx_draw_mesh(MxStdModel&, double *color=NULL);
-extern void mx_draw_wireframe(MxStdModel&, double *color=NULL);
+extern void mx_draw_mesh(MxStdModel&, real *color=NULL);
+extern void mx_draw_wireframe(MxStdModel&, real *color=NULL);
 extern void mx_draw_boundaries(MxStdModel&);
 extern void mx_draw_pointcloud(MxStdModel&);
 */

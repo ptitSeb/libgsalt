@@ -25,11 +25,11 @@
 #endif
 
 static
-bool internal_jacobi4(double a[4][4], double w[4], double v[4][4])
+bool internal_jacobi4(real a[4][4], real w[4], real v[4][4])
 {
     int i, j, k, iq, ip;
-    double tresh, theta, tau, t, sm, s, h, g, c;
-    double b[4], z[4], tmp;
+    real tresh, theta, tau, t, sm, s, h, g, c;
+    real b[4], z[4], tmp;
 
     // initialize
     for (ip=0; ip<4; ip++) 
@@ -164,7 +164,7 @@ bool internal_jacobi4(double a[4][4], double w[4], double v[4][4])
 
 bool jacobi(const Mat4& m, Vec4& eig_vals, Vec4 eig_vecs[4])
 {
-    double a[4][4], w[4], v[4][4];
+    real a[4][4], w[4], v[4][4];
     int i,j;
 
     for(i=0;i<4;i++) for(j=0;j<4;j++) a[i][j] = m(i,j);

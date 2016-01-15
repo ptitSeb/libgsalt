@@ -29,33 +29,33 @@ public:
 
     // Descriptive interface
     //
-    typedef double value_type;
+    typedef real value_type;
     typedef Vec3 vector_type;
     typedef Mat3 inverse_type;
     static int dim() { return 3; }
 
     // Access methods
     // 
-    double& operator()(int i, int j)       { return row[i][j]; }
-    double  operator()(int i, int j) const { return row[i][j]; }
+    real& operator()(int i, int j)       { return row[i][j]; }
+    real  operator()(int i, int j) const { return row[i][j]; }
     Vec3&       operator[](int i)       { return row[i]; }
     const Vec3& operator[](int i) const { return row[i]; }
     inline Vec3 col(int i) const {return Vec3(row[0][i],row[1][i],row[2][i]);}
 
-    operator       double*()       { return row[0]; }
-    operator const double*()       { return row[0]; }
-    operator const double*() const { return row[0]; }
+    operator       real*()       { return row[0]; }
+    operator const real*()       { return row[0]; }
+    operator const real*() const { return row[0]; }
 
 
     // Assignment methods
     //
     inline Mat3& operator=(const Mat3& m);
-    inline Mat3& operator=(double s);
+    inline Mat3& operator=(real s);
 
     inline Mat3& operator+=(const Mat3& m);
     inline Mat3& operator-=(const Mat3& m);
-    inline Mat3& operator*=(double s);
-    inline Mat3& operator/=(double s);
+    inline Mat3& operator*=(real s);
+    inline Mat3& operator/=(real s);
 
 
     // Construction of standard matrices
@@ -64,7 +64,7 @@ public:
     static Mat3 outer_product(const Vec3& u, const Vec3& v);
     static Mat3 outer_product(const Vec3& v);
 
-    Mat3 &diag(double d);
+    Mat3 &diag(real d);
     Mat3 &ident() { return diag(1.0); }
 
 
@@ -78,7 +78,7 @@ public:
 inline Mat3& Mat3::operator=(const Mat3& m)
 	{ row[0] = m[0]; row[1] = m[1]; row[2] = m[2];  return *this; }
 
-inline Mat3& Mat3::operator=(double s)
+inline Mat3& Mat3::operator=(real s)
 	{ row[0]=s;  row[1]=s;  row[2]=s;  return *this; }
 
 inline Mat3& Mat3::operator+=(const Mat3& m)
@@ -87,10 +87,10 @@ inline Mat3& Mat3::operator+=(const Mat3& m)
 inline Mat3& Mat3::operator-=(const Mat3& m)
 	{ row[0] -= m[0]; row[1] -= m[1]; row[2] -= m[2]; return *this; }
 
-inline Mat3& Mat3::operator*=(double s)
+inline Mat3& Mat3::operator*=(real s)
 	{ row[0] *= s; row[1] *= s; row[2] *= s;  return *this; }
 
-inline Mat3& Mat3::operator/=(double s)
+inline Mat3& Mat3::operator/=(real s)
 	{ row[0] /= s; row[1] /= s; row[2] /= s;  return *this; }
 
 ////////////////////////////////////////////////////////////////////////
@@ -107,12 +107,12 @@ inline Mat3 operator-(const Mat3& n, const Mat3& m)
 inline Mat3 operator-(const Mat3& m)
 	{ return Mat3(-m[0], -m[1], -m[2]); }
 
-inline Mat3 operator*(double s, const Mat3& m)
+inline Mat3 operator*(real s, const Mat3& m)
 	{ return Mat3(m[0]*s, m[1]*s, m[2]*s); }
-inline Mat3 operator*(const Mat3& m, double s)
+inline Mat3 operator*(const Mat3& m, real s)
 	{ return s*m; }
 
-inline Mat3 operator/(const Mat3& m, double s)
+inline Mat3 operator/(const Mat3& m, real s)
 	{ return Mat3(m[0]/s, m[1]/s, m[2]/s); }
 
 inline Vec3 operator*(const Mat3& m, const Vec3& v)
@@ -131,16 +131,16 @@ inline std::istream &operator>>(std::istream &in, Mat3& M)
 // Misc. function definitions
 //
 
-inline double det(const Mat3& m) { return m[0] * (m[1] ^ m[2]); }
+inline real det(const Mat3& m) { return m[0] * (m[1] ^ m[2]); }
 
-inline double trace(const Mat3& m) { return m(0,0) + m(1,1) + m(2,2); }
+inline real trace(const Mat3& m) { return m(0,0) + m(1,1) + m(2,2); }
 
 inline Mat3 transpose(const Mat3& m)
 	{ return Mat3(m.col(0), m.col(1), m.col(2)); }
 	
 extern Mat3 adjoint(const Mat3& m);
 
-extern double invert(Mat3& m_inv, const Mat3& m);
+extern real invert(Mat3& m_inv, const Mat3& m);
 
 inline Mat3 row_extend(const Vec3& v) { return Mat3(v, v, v); }
 
