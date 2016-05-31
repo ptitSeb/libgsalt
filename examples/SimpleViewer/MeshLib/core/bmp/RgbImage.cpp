@@ -14,6 +14,11 @@
 #include "GL/gl.h"
 #endif
 
+#ifdef STBI_VERSION
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+#endif
+
 /*! RgbImage constructor
 	*	\param numRows number of rows
 	*   \param numCols number of cols
@@ -55,6 +60,13 @@ RgbImage::RgbImage( int numRows, int numCols )
 	 */
 bool RgbImage::LoadBmpFile( const char* filename ) 
 {  
+	#ifdef STBI_VERSION
+	Reset();
+	int x, y, n;
+	ImagePtr = stbi_load(filename, &x, &y, &n, STBI_rgb_alpha);
+	NumRows = x; NumCols = y;
+	return (ImagePtr!=NULL);
+	#else
 	Reset();
 	FILE* infile = fopen( filename, "rb" );		// Open for reading binary data
 	if ( !infile ) {
@@ -122,6 +134,7 @@ bool RgbImage::LoadBmpFile( const char* filename )
 	}
 	fclose( infile );	// Close the file
 	return true;
+	#endif
 }
 /*!	read a short integer form a file
 	\param infile input file

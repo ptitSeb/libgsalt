@@ -7,6 +7,13 @@
 #ifndef RGBIMAGE_H
 #define RGBIMAGE_H
 
+#define STBI_NO_HDR
+#define STBI_NO_LINEAR
+#ifdef __ARM_NEON__
+#define STBI_NEON 
+#endif
+#include "stb_image.h"
+
 #include <stdio.h>
 #include <assert.h>
 
@@ -208,7 +215,11 @@ inline RgbImage::RgbImage( const char* filename )
 	 */
 inline RgbImage::~RgbImage()
 { 
+#ifdef STBI_VERSION
+	stbi_image_free(ImagePtr);
+#else
 	delete[] ImagePtr;
+#endif
 }
 
 // Returned value points to three "unsigned char" values for R,G,B
@@ -276,7 +287,11 @@ inline void RgbImage::Reset()
 {
 	NumRows = 0;
 	NumCols = 0;
+#ifdef STBI_VERSION
+	stbi_image_free(ImagePtr);
+#else
 	delete[] ImagePtr;
+#endif
 	ImagePtr = 0;
 	ErrorCode = 0;
 }
